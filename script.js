@@ -29,7 +29,7 @@ const scanner = new QrScanner(
 qrGroup.style.display = "none";  // Kommentiert wenn Scanner aktiv sein soll
 
 
-// Test: Einfügen einer Area aus JSON
+// Test: interaktiver Raumplan aus JSON
 
 const mapImage = document.querySelector("img[usemap]");
 let selectedRooms = [];
@@ -78,3 +78,14 @@ function roomClicked(area) {
         }
     }
 }
+
+
+// Tool: Position des Mausklicks relativ zum Bild auslesen
+// document.addEventListener("click", (event) => {
+//     const mapRect = mapImage.getBoundingClientRect();
+//     const mousePosition = {
+//         x: event.clientX - mapRect.left,
+//         y: event.clientY - mapRect.top
+//     };
+//     console.log(mousePosition.x, mousePosition.y);
+// });
