@@ -33,21 +33,25 @@ qrGroup.style.display = "none";  // Kommentiert wenn Scanner aktiv sein soll
 
 const mapImage = document.querySelector("img[usemap]");
 let selectedRooms = [];
-
+let drawnPaths = [];
+let JSONData;
+let currentMap;
 
 await fetch("Test Gebäudeplan/Gebäudeplan_Bsp.json")
     .then(response => response.json())
     .then(data => {
-        for (let map of data.maps) {
-            for (let room of map.rooms) {
-                const area = room;
-                const areaElement = document.createElement("area");
-                areaElement.setAttribute("shape", area.shape);
-                areaElement.setAttribute("coords", area.coords.join(","));
-                areaElement.onclick = (() => roomClicked(area));
-                document.querySelector("map").appendChild(areaElement);
-            }
+        JSONData = data;
+        let map = data.maps[0];
+        currentMap = map;
+        for (let room of map.rooms) {
+            const area = room;
+            const areaElement = document.createElement("area");
+            areaElement.setAttribute("shape", area.shape);
+            areaElement.setAttribute("coords", area.coords.join(","));
+            areaElement.onclick = (() => roomClicked(area));
+            document.querySelector("map").appendChild(areaElement);
         }
+
     });
 
 function roomClicked(area) {
@@ -76,6 +80,32 @@ function roomClicked(area) {
         if (selectedRooms.length > 2) {
             document.getElementById(selectedRooms.shift()).remove();
         }
+    }
+    handleNewTargets();
+}
+
+
+function handleNewTargets() {
+    drawnPaths.forEach(path => path.remove());
+    drawnPaths = [];
+    if (selectedRooms.length == 2) {
+        const startRoomID = selectedRooms[0];
+        const endRoomID = selectedRooms[1];
+
+        const waypoints = currentMap.waypoints;
+        const startRoom = waypoints.find(waypoint => waypoint.links.some(link => link === ("room:" + startRoomID)));
+        const endRoom = waypoints.find(waypoint => waypoint.links.some(link => link === ("room:" + endRoomID)));
+
+        const startWaypoint = startRoom.id;
+        const endWaypoint = endRoom.id;
+
+        const traversedWaypoints = traverseWaypoints(startWaypoint, endWaypoint, waypoints);
+
+        const traversedWaypointIDs = traversedWaypoints.map(waypoint => waypoint.id);
+        const traversedWaypointCoords = traversedWaypoints.map(waypoint => [waypoint.x, waypoint.y]);
+
+        // drawPath(traversedWaypointCoords);
+        console.log(traversedWaypointCoords);
     }
 }
 
