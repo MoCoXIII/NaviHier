@@ -1,0 +1,153 @@
+{
+    "maps": [
+        {
+            "map": "Test Gebäudeplan/Gebäudeplan_Bsp.svg",
+            "rooms": [
+                {
+                    "names": [
+                        "1",
+                        "Mathe",
+                        "Mathematik"
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        0,
+                        0,
+                        239,
+                        154
+                    ]
+                },
+                {
+                    "names": [
+                        "2",
+                        "Deutsch"
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        244,
+                        0,
+                        482,
+                        154
+                    ]
+                },
+                {
+                    "names": [
+                        "3",
+                        "Biologie"
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        487,
+                        0,
+                        727,
+                        154
+                    ]
+                },
+                {
+                    "names": [
+                        "4",
+                        "Lehrerzimmer"
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        732,
+                        0,
+                        1000,
+                        258
+                    ]
+                },
+                {
+                    "names": [
+                        "5",
+                        "Aula"
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        0,
+                        262,
+                        349,
+                        563
+                    ]
+                },
+                {
+                    "names": [
+                        "6",
+                        ""
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        452,
+                        262,
+                        630,
+                        416
+                    ]
+                },
+                {
+                    "names": [
+                        "7",
+                        ""
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        452,
+                        421,
+                        630,
+                        482
+                    ]
+                },
+                {
+                    "names": [
+                        "8",
+                        ""
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        452,
+                        567,
+                        630,
+                        705
+                    ]
+                },
+                {
+                    "names": [
+                        "9",
+                        ""
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        0,
+                        567,
+                        349,
+                        705
+                    ]
+                },
+                {
+                    "names": [
+                        "10",
+                        ""
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        732,
+                        262,
+                        1000,
+                        705
+                    ]
+                },
+                {
+                    "names": [
+                        "11",
+                        ""
+                    ],
+                    "shape": "rect",
+                    "coords": [
+                        633,
+                        262,
+                        727,
+                        416
+                    ]
+                }
+            ]
+        }
+    ]
+}
