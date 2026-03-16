@@ -109,6 +109,27 @@ function handleNewTargets() {
     }
 }
 
+function traverseWaypoints(start, end, waypoints) {
+    const queue = [[start, []]];
+    const visited = new Set();
+
+    while (queue.length > 0) {
+        const [node, path] = queue.shift();
+        if (visited.has(node)) continue;
+        visited.add(node);
+
+        if (node === end) return [...path, end].map(id => waypoints.find(waypoint => waypoint.id === id));
+
+        for (const link of waypoints.find(waypoint => waypoint.id === node).links) {
+            if (link.startsWith("room:")) continue;
+            const nextNode = link.split(":")[1];
+            queue.push([nextNode, [...path, node]]);
+        }
+    }
+
+    return null;
+}
+
 
 // Tool: Position des Mausklicks relativ zum Bild auslesen
 // document.addEventListener("click", (event) => {
