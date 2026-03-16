@@ -182,7 +182,8 @@
                     "y": 200,
                     "links": [
                         "waypoint:2",
-                        "waypoint:4"
+                        "waypoint:4",
+                        "waypoint:5"
                     ]
                 },
                 {
@@ -192,6 +193,24 @@
                     "links": [
                         "waypoint:3",
                         "room:2"
+                    ]
+                },
+                {
+                    "id": "5",
+                    "x": 670,
+                    "y": 200,
+                    "links": [
+                        "waypoint:3",
+                        "waypoint:6"
+                    ]
+                },
+                {
+                    "id": "6",
+                    "x": 670,
+                    "y": 133,
+                    "links": [
+                        "waypoint:5",
+                        "room:3"
                     ]
                 }
             ]
