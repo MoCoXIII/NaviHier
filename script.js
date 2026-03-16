@@ -104,8 +104,7 @@ function handleNewTargets() {
         const traversedWaypointIDs = traversedWaypoints.map(waypoint => waypoint.id);
         const traversedWaypointCoords = traversedWaypoints.map(waypoint => [waypoint.x, waypoint.y]);
 
-        // drawPath(traversedWaypointCoords);
-        console.log(traversedWaypointCoords);
+        drawPath(traversedWaypointCoords);
     }
 }
 
@@ -130,6 +129,20 @@ function traverseWaypoints(start, end, waypoints) {
     return null;
 }
 
+
+function drawPath(coordsList) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const mapRect = mapImage.getBoundingClientRect();
+    svg.setAttribute("style", `position: absolute; top: ${mapRect.top}px; left: ${mapRect.left}px; width: ${mapRect.width}px; height: ${mapRect.height}px; pointer-events: none;`);
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M " + coordsList.map(coords => `${coords[0]} ${coords[1]} `).join("L"));
+    path.setAttribute("stroke", "red");
+    path.setAttribute("stroke-width", "5");
+    path.setAttribute("fill", "none");
+    svg.appendChild(path);
+    mapImage.parentNode.appendChild(svg);
+    drawnPaths.push(svg);
+}
 
 // Tool: Position des Mausklicks relativ zum Bild auslesen
 // document.addEventListener("click", (event) => {
