@@ -37,6 +37,25 @@ let drawnPaths = [];
 let JSONData;
 let currentMap;
 
+
+function rescaleMapImage() {
+    const maxWidth = window.innerWidth - 20;
+    const maxHeight = window.innerHeight - 20;
+    const aspectRatio = mapImage.naturalWidth / mapImage.naturalHeight;
+    const width = aspectRatio > 1 ? maxHeight * aspectRatio : maxWidth;
+    mapImage.style.width = `${width}px`;
+}
+window.addEventListener("resize", () => {
+    rescaleMapImage();
+});
+
+const originalScaleWidth = 1000;  // Die Breite des Bildes, auf der der Raumplan in Pixeln definiert ist
+
+// Von den Folgenden Zeilen soll nur eine entkommentiert sein, da sonst die letztere die erstere überschreibt
+// mapImage.style.width = `${originalScaleWidth}px`;  // Entkommentieren, um kalibrierte Größe zu sehen
+rescaleMapImage();  // Kommentieren, wenn die obige Zeile entkommentiert ist
+
+
 await fetch("Test Gebäudeplan/Gebäudeplan_Bsp.json")
     .then(response => response.json())
     .then(data => {
@@ -47,7 +66,13 @@ await fetch("Test Gebäudeplan/Gebäudeplan_Bsp.json")
             const area = room;
             const areaElement = document.createElement("area");
             areaElement.setAttribute("shape", area.shape);
-            areaElement.setAttribute("coords", area.coords.join(","));
+            const updateAreaElementScale = () => {
+                const scale = mapImage.clientWidth / originalScaleWidth;
+                const areaCoords = area.coords.map(coord => coord * scale);
+                areaElement.setAttribute("coords", areaCoords.join(","));
+            };
+            window.addEventListener("resize", updateAreaElementScale);
+            updateAreaElementScale();
             areaElement.onclick = (() => roomClicked(area));
             document.querySelector("map").appendChild(areaElement);
         }
@@ -62,17 +87,25 @@ function roomClicked(area) {
     } else {
         const areaCoords = area.coords;
         const imgRect = mapImage.getBoundingClientRect();
-        const style = `
-        position: absolute;
-        top: ${areaCoords[1] + imgRect.top}px;
-        left: ${areaCoords[0] + imgRect.left}px;
-        width: ${areaCoords[2] - areaCoords[0]}px;
-        height: ${areaCoords[3] - areaCoords[1]}px;
-        background-color: rgba(255, 0, 0, 0.5);
-        pointer-events: none;`;
         const box = document.createElement("div");
         box.id = area.names[0];
-        box.setAttribute("style", style);
+
+        const updateScale = () => {
+            const scale = mapImage.clientWidth / originalScaleWidth;
+            const style = `
+                position: absolute;
+                top: ${areaCoords[1] * scale + imgRect.top}px;
+                left: ${areaCoords[0] * scale + imgRect.left}px;
+                width: ${(areaCoords[2] - areaCoords[0]) * scale}px;
+                height: ${(areaCoords[3] - areaCoords[1]) * scale}px;
+                background-color: rgba(255, 0, 0, 0.5);
+                pointer-events: none;
+            `;
+            box.setAttribute("style", style);
+        };
+        window.addEventListener("resize", updateScale);
+        updateScale();
+
         document.body.appendChild(box);
 
         // Limitiere die Anzahl der gewählten Räume auf Start- und Zielraum
@@ -132,10 +165,23 @@ function traverseWaypoints(start, end, waypoints) {
 
 function drawPath(coordsList) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    const mapRect = mapImage.getBoundingClientRect();
-    svg.setAttribute("style", `position: absolute; top: ${mapRect.top}px; left: ${mapRect.left}px; width: ${mapRect.width}px; height: ${mapRect.height}px; pointer-events: none;`);
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", "M " + coordsList.map(coords => `${coords[0]} ${coords[1]} `).join("L"));
+    const updateSvgScale = () => {
+        const mapRect = mapImage.getBoundingClientRect();
+        const scale = mapImage.clientWidth / mapImage.naturalWidth;
+        const svgWidth = mapImage.naturalWidth * scale;
+        const svgHeight = mapImage.naturalHeight * scale;
+        svg.setAttribute("style", `position: absolute; top: ${mapRect.top}px; left: ${mapRect.left}px; width: ${svgWidth}px; height: ${svgHeight}px; pointer-events: none;`);
+    }
+    window.addEventListener("resize", updateSvgScale);
+    updateSvgScale();
+
+    const updatePathScale = () => {
+        const scale = mapImage.clientWidth / originalScaleWidth;
+        path.setAttribute("d", "M " + coordsList.map(coords => `${coords[0] * scale} ${coords[1] * scale} `).join("L"));
+    }
+    window.addEventListener("resize", updatePathScale);
+    updatePathScale();
     path.setAttribute("stroke", "red");
     path.setAttribute("stroke-width", "5");
     path.setAttribute("fill", "none");
