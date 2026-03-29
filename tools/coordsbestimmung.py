@@ -179,7 +179,9 @@ pygame.init()
 
 # erstellen der Variablen
 screen = pygame.display.set_mode((1500, 1000))
-plan = pygame.image.load(r"C:\Bell\NaviHier\Test Gebäudeplan\Gebäudeplan.png")
+## SA bitte keine absoluten pfade
+# plan = pygame.image.load(r"C:\Bell\NaviHier\Test Gebäudeplan\Gebäudeplan.png")
+plan = pygame.image.load(r"..\Test Gebäudeplan\Gebäudeplan.png")
 plan = pygame.transform.scale(plan, (1500, 1000))
 
 x1 = 0
