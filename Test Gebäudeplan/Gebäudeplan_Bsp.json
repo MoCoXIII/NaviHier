@@ -5,7 +5,7 @@
             "rooms": [
                 {
                     "names": [
-                        "1",
+                        "P1",
                         "Mathe",
                         "Mathematik"
                     ],
@@ -19,7 +19,7 @@
                 },
                 {
                     "names": [
-                        "2",
+                        "P2",
                         "Deutsch"
                     ],
                     "shape": "rect",
@@ -32,7 +32,7 @@
                 },
                 {
                     "names": [
-                        "3",
+                        "P3",
                         "Biologie"
                     ],
                     "shape": "rect",
@@ -45,7 +45,7 @@
                 },
                 {
                     "names": [
-                        "4",
+                        "P4",
                         "Lehrerzimmer"
                     ],
                     "shape": "rect",
@@ -58,7 +58,7 @@
                 },
                 {
                     "names": [
-                        "5",
+                        "P5",
                         "Aula"
                     ],
                     "shape": "rect",
@@ -71,8 +71,8 @@
                 },
                 {
                     "names": [
-                        "6",
-                        ""
+                        "P6",
+                        "Astronomie"
                     ],
                     "shape": "rect",
                     "coords": [
@@ -84,8 +84,8 @@
                 },
                 {
                     "names": [
-                        "7",
-                        ""
+                        "P7",
+                        "WC"
                     ],
                     "shape": "rect",
                     "coords": [
@@ -97,8 +97,8 @@
                 },
                 {
                     "names": [
-                        "8",
-                        ""
+                        "P8",
+                        "Geschichte"
                     ],
                     "shape": "rect",
                     "coords": [
@@ -110,8 +110,8 @@
                 },
                 {
                     "names": [
-                        "9",
-                        ""
+                        "P9",
+                        "Besprechungsraum"
                     ],
                     "shape": "rect",
                     "coords": [
@@ -123,8 +123,8 @@
                 },
                 {
                     "names": [
-                        "10",
-                        ""
+                        "P10",
+                        "Mensa"
                     ],
                     "shape": "rect",
                     "coords": [
@@ -136,8 +136,8 @@
                 },
                 {
                     "names": [
-                        "11",
-                        ""
+                        "P11",
+                        "Direktor"
                     ],
                     "shape": "rect",
                     "coords": [
@@ -154,7 +154,7 @@
                     "x": 186,
                     "y": 133,
                     "links": [
-                        "room:1",
+                        "room:P1",
                         "waypoint:1"
                     ]
                 },
@@ -192,7 +192,7 @@
                     "y": 133,
                     "links": [
                         "waypoint:3",
-                        "room:2"
+                        "room:P2"
                     ]
                 },
                 {
@@ -210,7 +210,7 @@
                     "y": 133,
                     "links": [
                         "waypoint:5",
-                        "room:3"
+                        "room:P3"
                     ]
                 }
             ]
