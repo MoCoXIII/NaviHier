@@ -33,6 +33,7 @@ qrGroup.style.display = "none";  // Kommentiert wenn Scanner aktiv sein soll
 
 const mapImage = document.querySelector("img[usemap]");
 let selectedRooms = [];
+let selectedRoomPaths = [];
 let drawnPaths = [];
 let JSONData;
 let currentMap;
@@ -54,6 +55,18 @@ const originalScaleWidth = 1000;  // Die Breite des Bildes, auf der der Raumplan
 // Von den Folgenden Zeilen soll nur eine entkommentiert sein, da sonst die letztere die erstere überschreibt
 // mapImage.style.width = `${originalScaleWidth}px`;  // Entkommentieren, um kalibrierte Größe zu sehen
 rescaleMapImage();  // Kommentieren, wenn die obige Zeile entkommentiert ist
+
+const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+const updateSvgScale = () => {
+    const mapRect = mapImage.getBoundingClientRect();
+    const scale = mapImage.clientWidth / mapImage.naturalWidth;
+    const svgWidth = mapImage.naturalWidth * scale;
+    const svgHeight = mapImage.naturalHeight * scale;
+    svg.setAttribute("style", `position: absolute; top: ${mapRect.top}px; left: ${mapRect.left}px; width: ${svgWidth}px; height: ${svgHeight}px; pointer-events: none;`);
+}
+window.addEventListener("resize", updateSvgScale);
+updateSvgScale();
+mapImage.parentNode.appendChild(svg);
 
 
 await fetch("Test Gebäudeplan/Gebäudeplan_Bsp.json")
@@ -80,38 +93,46 @@ await fetch("Test Gebäudeplan/Gebäudeplan_Bsp.json")
     });
 
 function roomClicked(area) {
-    const oldBox = document.getElementById(area.names[0]);
-    if (oldBox) {  // Wenn eine Box für diesen Raum bereits existiert, entferne sie, statt eine neue zu erstellen
-        oldBox.remove();
+    const oldPath = svg.querySelector("#" + area.names[0]);
+    if (oldPath) {  // Wenn ein Pfad für diesen Raum bereits existiert, entferne ihn, statt einen neuen zu erstellen
+        oldPath.remove();
         selectedRooms.splice(selectedRooms.indexOf(area.names[0]), 1);
+        selectedRoomPaths.splice(selectedRoomPaths.indexOf(oldPath), 1);
     } else {
-        const areaCoords = area.coords;
-        const imgRect = mapImage.getBoundingClientRect();
-        const box = document.createElement("div");
-        box.id = area.names[0];
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.id = area.names[0];
 
         const updateScale = () => {
             const scale = mapImage.clientWidth / originalScaleWidth;
-            const style = `
-                position: absolute;
-                top: ${areaCoords[1] * scale + imgRect.top}px;
-                left: ${areaCoords[0] * scale + imgRect.left}px;
-                width: ${(areaCoords[2] - areaCoords[0]) * scale}px;
-                height: ${(areaCoords[3] - areaCoords[1]) * scale}px;
-                background-color: rgba(255, 0, 0, 0.5);
-                pointer-events: none;
-            `;
-            box.setAttribute("style", style);
+            let d;
+            if (area.shape === "rect") {
+                const [x1, y1, x2, y2] = area.coords.map(c => c * scale);
+                d = `M ${x1} ${y1} L ${x2} ${y1} L ${x2} ${y2} L ${x1} ${y2} Z`;
+            } else if (area.shape === "poly") {
+                const scaledCoords = area.coords.map(c => c * scale);
+                const points = [];
+                for (let i = 0; i < scaledCoords.length; i += 2) {
+                    points.push(`${scaledCoords[i]} ${scaledCoords[i + 1]}`);
+                }
+                d = `M ${points.join(' L ')} Z`;
+            }
+            path.setAttribute("d", d);
         };
         window.addEventListener("resize", updateScale);
         updateScale();
 
-        document.body.appendChild(box);
+        path.setAttribute("fill", "rgba(255, 0, 0, 0.5)");
+        path.setAttribute("stroke", "none");
+
+        svg.appendChild(path);
 
         // Limitiere die Anzahl der gewählten Räume auf Start- und Zielraum
         selectedRooms.push(area.names[0]);
+        selectedRoomPaths.push(path);
         if (selectedRooms.length > 2) {
-            document.getElementById(selectedRooms.shift()).remove();
+            const removedRoom = selectedRooms.shift();
+            const removedPath = selectedRoomPaths.shift();
+            removedPath.remove();
         }
     }
     handleNewTargets();
@@ -164,17 +185,13 @@ function traverseWaypoints(start, end, waypoints) {
 
 
 function drawPath(coordsList) {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const updateSvgScale = () => {
-        const mapRect = mapImage.getBoundingClientRect();
-        const scale = mapImage.clientWidth / mapImage.naturalWidth;
-        const svgWidth = mapImage.naturalWidth * scale;
-        const svgHeight = mapImage.naturalHeight * scale;
-        svg.setAttribute("style", `position: absolute; top: ${mapRect.top}px; left: ${mapRect.left}px; width: ${svgWidth}px; height: ${svgHeight}px; pointer-events: none;`);
+    path.id = "walk";
+
+    const existingPath = svg.querySelector("#walk");
+    if (existingPath) {
+        existingPath.remove();
     }
-    window.addEventListener("resize", updateSvgScale);
-    updateSvgScale();
 
     const updatePathScale = () => {
         const scale = mapImage.clientWidth / originalScaleWidth;
@@ -186,8 +203,7 @@ function drawPath(coordsList) {
     path.setAttribute("stroke-width", "5");
     path.setAttribute("fill", "none");
     svg.appendChild(path);
-    mapImage.parentNode.appendChild(svg);
-    drawnPaths.push(svg);
+    drawnPaths.push(path);
 }
 
 // Tool: Position des Mausklicks relativ zum Bild auslesen
