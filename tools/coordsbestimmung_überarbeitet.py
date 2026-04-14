@@ -1,0 +1,242 @@
+# coordsbestimmung_überarbeitet
+# Theo Glase
+# 13.04.2026
+
+import pygame
+import customtkinter
+import json
+import math
+
+# erstelle das root tkinterfenster
+root = customtkinter.CTk()
+root.attributes("-topmost", True)
+root.withdraw()
+
+# erstellen der Fragelisten
+questions_s = [
+        "Gib die Nr des Raumes ein",
+        "Gib den Namen des Raumes ein",
+        "Gib den Zweiten Namen des Raumes ein"
+        ]
+
+questions_c = [
+        "Gib die Nr des Raumes ein",
+        "Gib den Namen des Raumes ein",
+        "Gib den Zweiten Namen des Raumes ein"
+        ]
+
+questions_w = [
+        "Gib die Wegpunktnummer ein",
+        "Gib den ersten Wegbunktlink ein",
+        "Gib den zweiten Wegbunktlink ein",
+        "Gib den dritten Wegpunktlink ein",
+        "Gib den vierten Wegpunktlink ein"
+        ]
+
+def dialog (questions):
+        loc_answers = []
+        for question in questions:
+                dialog = customtkinter.CTkInputDialog(text=question, title="Attributeingabe")   
+                answ = dialog.get_input()
+                
+                if answ is not None:
+                        loc_answers.append(answ)
+                else:
+                        print("Eingabe abgebrochen")
+                        return None
+        return loc_answers
+
+def square (s_x1, s_y1, s_x2, s_y2):
+        answers = dialog(questions_s)
+        if answers is None:
+                return
+        else:
+                data = {
+                "names": [
+                        f"{answers[0]}",
+                        f"{answers[1]}",
+                        f"{answers[2]}"
+                ],
+                "shape": "rect",
+                "coords": [
+                        s_x1/scale,
+                        s_y1/scale,
+                        s_x2/scale,
+                        s_y2/scale
+                ]
+                }
+                print(data)
+
+def circle (c_x, c_y, radiuspos_x, radiuspos_y):
+        answers = dialog(questions_c)
+        if answers is None:
+                return
+        else:
+                data = {
+                "names": [
+                        f"{answers[0]}",
+                        f"{answers[1]}",
+                        f"{answers[2]}"
+                ],
+                "shape": "circle",
+                "coords": [
+                        c_x/scale,
+                        c_y/scale,
+                        math.dist((c_x/scale, c_y/scale), (radiuspos_x/scale, radiuspos_y/scale))
+                ]
+                }
+                print(data)
+
+def waypoint (w_x, w_y):
+        answers = dialog(questions_w)
+
+        if answers is None:
+                return
+        else:
+                data = {
+                "id": f"{answers[0]}",
+                "x": w_x/scale,
+                "y": w_y/scale,
+                "links": [
+                        f"{answers[1]}",
+                        f"{answers[2]}",
+                        f"{answers[3]}",
+                        f"{answers[4]}"
+                ]
+                }
+                print(data)        
+
+# initialisieren von Pygame
+pygame.init()
+
+# erstellen der Variablen für den Gebäudeplan
+screen = pygame.display.set_mode((1500, 1000))
+plan = pygame.image.load(r"Test_Gebäudeplan\Gebäudeplan.png")
+plan = pygame.transform.scale(plan, (1500, 1000))
+
+# erstellen der Positionsvariablen
+s_x1 = 0
+s_y1 = 0
+s_x2 = 0
+s_y2 = 0
+
+c_x = 0
+c_y = 0
+radius_pos_x = 0
+radius_pos_y = 0
+
+w_x = 0
+w_y = 0
+
+# erstellend der zum Abbrechen der coordseingabe
+while_running_s = True
+while_running_c = True
+while_running_w = True
+
+# erstellen der scale
+scale = 1000/plan.get_width()
+
+running = True
+while running:
+
+        # plazieren des Bildes
+        screen.blit(plan, (0, 0))
+
+        for event in pygame.event.get():
+                
+                # prüfen, ob das Fenster geschlossen wird
+                if event.type == pygame.QUIT:
+                        running = False
+                
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                        
+                        print("Gebe die Koordinate der oberen, linken Ecke ein")
+                        while while_running_s:
+                                for event in pygame.event.get():
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                                s_x1, s_y1 = pygame.mouse.get_pos()
+                                                
+                                                print("Gebe die Koordinate der unteren, rechten Ecke ein")
+                                                while while_running_s:
+                                                        for event in pygame.event.get():
+                                                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                                                        s_x2, s_y2 = pygame.mouse.get_pos()
+                                                                        square(s_x1, s_y1, s_x2, s_y2)
+
+                                                                elif event.type == pygame.QUIT:
+                                                                        while_running_s = False
+                                                                        running = False
+                                                                        break
+                                                                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                                                                        while_running_s = False
+                                                                        print("Koordinateneingabe abgebrochen!")
+                                                                        break
+
+                                        elif event.type == pygame.QUIT:
+                                                while_running_s = False
+                                                running = False
+                                                break
+                                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                                                while_running_s = False
+                                                print("Koordinateneingabe abgebrochen!")
+                                                break
+                
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+                        
+                        print("Gebe die Koordinaten des Mittelpunkt des Kreises ein")
+                        while while_running_c:
+                                for event in pygame.event.get():
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                                c_x, c_y = pygame.mouse.get_pos()
+
+                                                print("Gebe Koordinaten an, um den Radius zu bestimmen")
+                                                while while_running_c:
+                                                        for event in pygame.event.get():
+                                                                if event.type == pygame.MOUSEBUTTONDOWN:
+                                                                        radius_pos_x, radius_pos_y = pygame.mouse.get_pos()
+                                                                        circle(c_x, c_y, radius_pos_x, radius_pos_y)
+
+                                                                elif event.type == pygame.QUIT:
+                                                                        while_running_c = False
+                                                                        running = False
+                                                                        break
+                                                                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                                                                        while_running_c = False
+                                                                        print("Koordinateneingabe abgebrochen!")
+                                                                        break
+
+                                        elif event.type == pygame.QUIT:
+                                                while_running_c = False
+                                                running = False
+                                                break
+                                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                                                while_running_c = False
+                                                print("Koordinateneingabe abgebrochen!")
+                                                break
+                                
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
+                        
+                        print("Gebe die Koordinaten des Wegpunktes ein")
+                        while while_running_w:
+                                for event in pygame.event.get():
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                                c_x, c_y = pygame.mouse.get_pos()
+                                                waypoint(c_x, c_y)
+
+                                        elif event.type == pygame.QUIT:
+                                                while_running_c = False
+                                                running == False
+                                                break
+                                        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                                                while_running_w = False
+                                                print("Koordinateneingabe abgebrochen!")
+                                                break
+
+                # zurücksetzen der Variablen zum Abbrechen der coordeingabe
+                while_running_s = True
+                while_running_c = True
+                while_running_w = True 
+
+        pygame.display.flip()
+
+pygame.quit()
