@@ -65,7 +65,7 @@ def square (s_x1, s_y1, s_x2, s_y2):
                         s_y2/scale
                 ]
                 }
-                print(data)
+                add_room(data)
 
 def circle (c_x, c_y, radiuspos_x, radiuspos_y):
         answers = dialog(questions_c)
@@ -85,7 +85,7 @@ def circle (c_x, c_y, radiuspos_x, radiuspos_y):
                         math.dist((c_x/scale, c_y/scale), (radiuspos_x/scale, radiuspos_y/scale))
                 ]
                 }
-                print(data)
+                add_room(data)
 
 def waypoint (w_x, w_y):
         answers = dialog(questions_w)
@@ -104,7 +104,25 @@ def waypoint (w_x, w_y):
                         f"{answers[4]}"
                 ]
                 }
-                print(data)        
+                add_waypoint(data)   
+
+def add_room(data):
+        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "r", encoding="utf-8") as file:
+                current_data = json.load(file)
+
+        current_data["maps"][0]["rooms"].append(data)
+
+        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "w", encoding="utf-8") as file:
+                json.dump(current_data, file, indent=4, ensure_ascii=False)
+
+def add_waypoint(data):
+        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "r", encoding="utf-8") as file:
+                current_data = json.load(file)
+        
+        current_data["maps"][0]["waypoints"].append(data)
+
+        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "w", encoding="utf-8") as file:
+                json.dump(current_data, file, indent=4)
 
 # initialisieren von Pygame
 pygame.init()
@@ -162,6 +180,7 @@ while running:
                                                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                                                         s_x2, s_y2 = pygame.mouse.get_pos()
                                                                         square(s_x1, s_y1, s_x2, s_y2)
+                                                                        while_running_s = False
 
                                                                 elif event.type == pygame.QUIT:
                                                                         while_running_s = False
@@ -195,6 +214,7 @@ while running:
                                                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                                                         radius_pos_x, radius_pos_y = pygame.mouse.get_pos()
                                                                         circle(c_x, c_y, radius_pos_x, radius_pos_y)
+                                                                        while_running_c = False
 
                                                                 elif event.type == pygame.QUIT:
                                                                         while_running_c = False
@@ -222,9 +242,10 @@ while running:
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                                 c_x, c_y = pygame.mouse.get_pos()
                                                 waypoint(c_x, c_y)
+                                                while_running_w = False
 
                                         elif event.type == pygame.QUIT:
-                                                while_running_c = False
+                                                while_running_w = False
                                                 running == False
                                                 break
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
