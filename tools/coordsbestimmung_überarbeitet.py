@@ -181,11 +181,27 @@ while_running_s_del = True
 while_running_c_del = True
 while_running_w_del = True
 
+# erstellen der Variable zum Anzeigen der Info
+info_shown = False
+
 # erstellen der scale
 scale = 1000/plan.get_width()
 
 running = True
 while running:
+
+        if not info_shown:
+                print("\n         ---Eingabeprogramm für Räume und Wegpunkte---\n\n" \
+                "Hinzufügen der Räume durch Drücken folgender Tasten:\n" \
+                "Quadratischer Raum: s\n" \
+                "Kreisförmiger Raum: c\n" \
+                "Raum mit benutzerdefinierter Form (Poygon): p\n\n" \
+                "Hinzufügen der Wegpunkte: w\n\n" \
+                "Die Koordinateneingabe kann mit ESCAPE abgebrochen werden, oder mit dem Close Knopf bei der Eigenschafteneingabe\n" \
+                "Die letzte angegebene Koordinate kann mit BACKSPACE gelöscht werden (relevant bei s, c und p)\n" \
+                "Die Eingabe der Koordinaten des Polygons kann mit ENTER abgeschlossen werden\n\n")
+
+                info_shown = True
 
         # plazieren des Bildes
         screen.blit(plan, (0, 0))
