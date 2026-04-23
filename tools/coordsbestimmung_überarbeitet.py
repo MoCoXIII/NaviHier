@@ -7,12 +7,12 @@ import customtkinter
 import json
 import math
 
-# erstelle das root tkinterfenster
+# erstellen des root tkinterfenster
 root = customtkinter.CTk()
 root.attributes("-topmost", True)
 root.withdraw()
 
-# erstellen der Fragelisten
+# erstellen der Fragelisten // question_...: Enthalten je nach Buchstabenpräfix die entsprechenden Fragen zu den Räumen oder Wegpunkten
 questions_s = [
         "Gib die Nr des Raumes ein",
         "Gib den Namen des Raumes ein",
@@ -39,6 +39,7 @@ question_p = [
         "Gib den Zweiten Namen des Raumes ein"
 ]
 
+# Funktion zum Erstellen des Dialogfensters und der Eingabeverarbeitung // loc_answers: lokale Variable, die die Eingaben speichert; answ: lokale Variable, die die aktuelle Eingabe speichert
 def dialog (questions):
         loc_answers = []
         for question in questions:
@@ -52,6 +53,7 @@ def dialog (questions):
                         return None
         return loc_answers
 
+# Funktion zum erstellen des Verzeichnisses des square Raumes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
 def square (s_x1, s_y1, s_x2, s_y2):
         answers = dialog(questions_s)
         if answers is None:
@@ -73,6 +75,7 @@ def square (s_x1, s_y1, s_x2, s_y2):
                 }
                 add_room(data)
 
+# Funktion zum erstellen des Verzeichnisses des circle Raumes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
 def circle (c_x, c_y, radiuspos_x, radiuspos_y):
         answers = dialog(questions_c)
         if answers is None:
@@ -93,6 +96,7 @@ def circle (c_x, c_y, radiuspos_x, radiuspos_y):
                 }
                 add_room(data)
 
+# Funktion zum erstellen des Verzeichnisses des Wegpunktes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
 def waypoint (w_x, w_y):
         answers = dialog(questions_w)
 
@@ -112,6 +116,7 @@ def waypoint (w_x, w_y):
                 }
                 add_waypoint(data)
 
+# Funktion zum erstellen des Verzeichnisses des polygon Raumes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
 def polygon (p_coords):
         answers = dialog(question_p)
         if answers is None:
@@ -128,6 +133,7 @@ def polygon (p_coords):
                 }
                 add_room(data)  
 
+# Funktion zum laden, bearbeiten (hinzufügen des neuen Raumes) und speichern der Json Datei // current_data: speichert die aktuelle Json Datei
 def add_room(data):
         with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "r", encoding="utf-8") as file:
                 current_data = json.load(file)
@@ -137,6 +143,7 @@ def add_room(data):
         with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "w", encoding="utf-8") as file:
                 json.dump(current_data, file, indent=4, ensure_ascii=False)
 
+# Funktion zum laden, bearbeiten (hinzufügen des neuen Wegpunktes) und speichern der Json Datei // current_data: speichert die aktuelle Json Datei
 def add_waypoint(data):
         with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "r", encoding="utf-8") as file:
                 current_data = json.load(file)
@@ -149,25 +156,28 @@ def add_waypoint(data):
 # initialisieren von Pygame
 pygame.init()
 
-# erstellen der Variablen für den Gebäudeplan
+# erstellen der Variablen für den Gebäudeplan // screen: Größe des Fensters; plan: laden des Gebäudeplans
 screen = pygame.display.set_mode((1500, 1000))
 plan = pygame.image.load(r"Test_Gebäudeplan\Gebäudeplan.png")
 plan = pygame.transform.scale(plan, (1500, 1000))
 
-# erstellen der Positionsvariablen, Listen
+# erstellen der Positionsvariablen für den square Raum // s_x1, s_y1: erste Koordinate (obere linke Ecke); s_x2, s_y2: zweite Koordinate (untere rechte Ecke)
 s_x1 = 0
 s_y1 = 0
 s_x2 = 0
 s_y2 = 0
 
+# erstellen der Positionsvariablen für den circle Raum // c_x, c_y: Position des Mittelpunktes, radius_pos_x, radius_pos_y: Position des Radiuspunktes
 c_x = 0
 c_y = 0
 radius_pos_x = 0
 radius_pos_y = 0
 
+# erstellen der Positionsvariablen des Wegpunktes // w_x, w_y: Koordinaten
 w_x = 0
 w_y = 0
 
+# erstellen der Liste zum speichern der Koordinaten des polygon Raumes
 p_coords = []
 
 # erstellend der Variablen zum Abbrechen der coordseingabe
@@ -190,6 +200,7 @@ scale = 1000/plan.get_width()
 running = True
 while running:
 
+        # Anzeigen der Info beim starten des Programms
         if not info_shown:
                 print("\n         ---Eingabeprogramm für Räume und Wegpunkte---\n\n" \
                 "Hinzufügen der Räume durch Drücken folgender Tasten:\n" \
@@ -212,13 +223,16 @@ while running:
                 if event.type == pygame.QUIT:
                         running = False
                 
+                # Prüfen, ob der suare Raum ausgewählt wurde
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                         
                         print("Gebe die Koordinate der oberen, linken Ecke ein\n")
                         while while_running_s:
                                 for event in pygame.event.get():
+                                        # zurücksetzen der Variablen zum Abbrechen der coordeingabe
                                         while_running_s_del = True
 
+                                        # speichern der ersten Koordinate
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                                 s_x1, s_y1 = pygame.mouse.get_pos()
                                                 
@@ -227,43 +241,55 @@ while running:
                                                 print("Gebe die Koordinate der unteren, rechten Ecke ein\n")
                                                 while while_running_s and while_running_s_del:
                                                         for event in pygame.event.get():
+
+                                                                # speichern der zweiten Koordinate
                                                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                                                         s_x2, s_y2 = pygame.mouse.get_pos()
                                                                         print(f"Abschluss der Koordinateneingabe\nKoordinaten: [{s_x1}, {s_y1}, {s_x2}, {s_y2}]\n")
                                                                         square(s_x1, s_y1, s_x2, s_y2)
                                                                         while_running_s = False
                                                                 
+                                                                # löschen der letzen Koordinate
                                                                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
                                                                         print(f"Du hast die letzte Koordinate: {s_x1}, {s_y1} gelöscht!\n")
                                                                         s_x1 = 0
                                                                         s_y1 = 0
                                                                         while_running_s_del = False
 
+                                                                # stoppen des Programms
                                                                 elif event.type == pygame.QUIT:
                                                                         while_running_s = False
                                                                         running = False
                                                                         break
+
+                                                                # abbrechen der Koordinateneingabe
                                                                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                                                                         while_running_s = False
                                                                         print("Koordinateneingabe abgebrochen!\n")
                                                                         break
 
+                                        # stoppen des Programms
                                         elif event.type == pygame.QUIT:
                                                 while_running_s = False
                                                 running = False
                                                 break
+
+                                        # abbrechen der Koordinateneingabe
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                                                 while_running_s = False
                                                 print("Koordinateneingabe abgebrochen!\n")
                                                 break
                 
+                # Prüfen, ob der Kreis Raum ausgewählt wurde
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_c:
                         
                         print("Gebe die Koordinaten des Mittelpunkt des Kreises ein\n")
                         while while_running_c:
                                 for event in pygame.event.get():
+                                        # zurücksetzen der Variablen zum Abbrechen der coordeingabe
                                         while_running_c_del = True
 
+                                        # speichern der ersten Koordinate
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                                 c_x, c_y = pygame.mouse.get_pos()
 
@@ -272,41 +298,53 @@ while running:
                                                 print("Gebe Koordinaten an, um den Radius zu bestimmen")
                                                 while while_running_c and while_running_c_del:
                                                         for event in pygame.event.get():
+
+                                                                # speichern der zweiten Koordinate
                                                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                                                         radius_pos_x, radius_pos_y = pygame.mouse.get_pos()
                                                                         print(f"Abschluss der Koordinateneingabe\nKoordinaten: [{c_x}, {c_y}; Radiuskoordinaten: {radius_pos_x}, {radius_pos_y}; Radius: {math.dist((c_x/scale, c_y/scale), (radius_pos_x/scale, radius_pos_y/scale))}]\n")
                                                                         circle(c_x, c_y, radius_pos_x, radius_pos_y)
                                                                         while_running_c = False
 
+                                                                # löschen der letzen Koordinate
                                                                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
                                                                         print(f"Du hast die letzte Koordinate: {c_x}, {c_y} gelöscht!\n")
                                                                         c_x = 0
                                                                         c_y = 0
                                                                         while_running_c_del = False
 
+                                                                # stoppen des Programms
                                                                 elif event.type == pygame.QUIT:
                                                                         while_running_c = False
                                                                         running = False
                                                                         break
+
+                                                                # abbrechen der Koordinateneingabe
                                                                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                                                                         while_running_c = False
                                                                         print("Koordinateneingabe abgebrochen!\n")
                                                                         break
 
+                                        # stoppen des Programms
                                         elif event.type == pygame.QUIT:
                                                 while_running_c = False
                                                 running = False
                                                 break
+
+                                        # abbrechen der Koordinateneingabe
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                                                 while_running_c = False
                                                 print("Koordinateneingabe abgebrochen!\n")
                                                 break
-                                
+                
+                # Prüfen, ob der Wegpunkt ausgewählt wurde
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
                         
                         print("Gebe die Koordinaten des Wegpunktes ein\n")
                         while while_running_w:
                                 for event in pygame.event.get():
+
+                                        # speichern der Koordinate
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                                 c_x, c_y = pygame.mouse.get_pos()
                                                 print("Die Koordinate wurden gespeichert")
@@ -314,20 +352,26 @@ while running:
                                                 waypoint(c_x, c_y)
                                                 while_running_w = False
 
+                                        # stoppen des Programms
                                         elif event.type == pygame.QUIT:
                                                 while_running_w = False
                                                 running == False
                                                 break
+
+                                        # abbrechen der Koordinateneingabe
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                                                 while_running_w = False
                                                 print("Koordinateneingabe abgebrochen!\n")
                                                 break
                 
+                # Prüfen, ob der Polygon Raum ausgewählt wurde
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_p:
 
                         print("Gebe die Koordinaten einer Ecke des Poligons an\n")
                         while while_running_p:
                                 for event in pygame.event.get():
+
+                                        # speichern der Koordinate
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                                 p_coords.append(pygame.mouse.get_pos()[0])
                                                 p_coords.append(pygame.mouse.get_pos()[1])
@@ -335,6 +379,7 @@ while running:
                                                 print(f"{p_coords}\n")
                                                 print("Gebe die Koordinaten einer Ecke des Poligons an\n")
                                         
+                                        # löschen der letzen Koordinate
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
                                                 del_coord_y = p_coords.pop()
                                                 del_coords_x = p_coords.pop()
@@ -342,15 +387,19 @@ while running:
                                                 print(f"{p_coords}\n")
                                                 print("Gebe die Koordinaten einer Ecke des Poligons an\n")
                                         
+                                        # abschließen der Koordinateneingabe
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                                                 print(f"Abschluss der Koordinateneingabe\nKoordinaten:{p_coords}")
                                                 polygon(p_coords)
                                                 while_running_p = False
                                         
+                                        # stoppen des Programms
                                         elif event.type == pygame.QUIT:
                                                 while_running_p = False
                                                 running = False
                                                 break
+
+                                        # abbrechen der Koordinateneingabe
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                                                 while_running_p = False
                                                 print("Koordinateneingabe abgebrochen!")
