@@ -1,0 +1,22 @@
+{
+    "images": {
+        "png": "plans/Gebäudeplan_Bsp.png",
+        "svg": "plans/Gebäudeplan_Bsp.svg"
+    },
+    "rooms": [
+        {
+
+        }
+    ],
+    "waypoints": [
+        {
+
+        }
+    ],
+    "connections": [
+        {
+            "from": "Node_ID",
+            "to": "Node_ID"
+        }
+    ]
+}

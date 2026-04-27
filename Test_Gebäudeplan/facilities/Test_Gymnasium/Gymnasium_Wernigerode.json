@@ -1,0 +1,10 @@
+[
+    {
+        "name": "building_01",
+        "path": "building_01/building_01.json"
+    },
+    {
+        "name": "building_02",
+        "path": "building_02/building_02.json"
+    }
+]

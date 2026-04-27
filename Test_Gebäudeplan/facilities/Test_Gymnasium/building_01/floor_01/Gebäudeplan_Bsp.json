@@ -172,6 +172,22 @@
                         999,
                         470
                     ]
+                },
+                {
+                    "names": [
+                        "2",
+                        "Mathe",
+                        "Mathematik"
+                    ],
+                    "shape": "poly",
+                    "coords": [
+                        678,
+                        369,
+                        676,
+                        587,
+                        947,
+                        371
+                    ]
                 }
             ],
             "waypoints": [

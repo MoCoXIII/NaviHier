@@ -158,7 +158,7 @@ pygame.init()
 
 # erstellen der Variablen für den Gebäudeplan // screen: Größe des Fensters; plan: laden des Gebäudeplans
 screen = pygame.display.set_mode((1500, 1000))
-plan = pygame.image.load(r"Test_Gebäudeplan\Gebäudeplan.png")
+plan = pygame.image.load(r"Test_Gebäudeplan\facility\Gymnasium_Wernigerode\building_01\floor_01\plans\Gebäudeplan_Bsp.png")
 plan = pygame.transform.scale(plan, (1500, 1000))
 
 # erstellen der Positionsvariablen für den square Raum // s_x1, s_y1: erste Koordinate (obere linke Ecke); s_x2, s_y2: zweite Koordinate (untere rechte Ecke)

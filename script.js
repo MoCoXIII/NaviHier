@@ -69,7 +69,7 @@ updateSvgScale();
 mapImage.parentNode.appendChild(svg);
 
 
-await fetch("Test Gebäudeplan/Gebäudeplan_Bsp.json")
+await fetch("Test_Gebäudeplan\\facilities\\Test_Gymnasium\\building_01\\floor_01\\Gebäudeplan_Bsp.json")
     .then(response => response.json())
     .then(data => {
         JSONData = data;
