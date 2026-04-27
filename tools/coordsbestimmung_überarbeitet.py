@@ -355,7 +355,7 @@ while running:
                                         # stoppen des Programms
                                         elif event.type == pygame.QUIT:
                                                 while_running_w = False
-                                                running == False
+                                                running = False
                                                 break
 
                                         # abbrechen der Koordinateneingabe
@@ -412,6 +412,9 @@ while running:
                 while_running_c = True
                 while_running_w = True 
                 while_running_p = True
+
+                # Löschen der Werte in der polygon Liste
+                p_coords.clear()
 
         pygame.display.flip()
 
