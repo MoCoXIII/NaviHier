@@ -1,2 +1,4 @@
 pygame
 customtkinter
+json
+pathlib

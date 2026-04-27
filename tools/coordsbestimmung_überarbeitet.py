@@ -6,6 +6,7 @@ import pygame
 import customtkinter
 import json
 import math
+from pathlib import Path
 
 # erstellen des root tkinterfenster
 root = customtkinter.CTk()
@@ -39,6 +40,11 @@ question_p = [
         "Gib den Zweiten Namen des Raumes ein"
 ]
 
+def plan_selection():
+        print("Wähle den Gebäudeplan aus")
+        plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("PNG Datei", "*.png")], initialdir=r"Test_Gebäudeplan")
+        return plan_path
+
 # Funktion zum Erstellen des Dialogfensters und der Eingabeverarbeitung // loc_answers: lokale Variable, die die Eingaben speichert; answ: lokale Variable, die die aktuelle Eingabe speichert
 def dialog (questions):
         loc_answers = []
@@ -54,7 +60,7 @@ def dialog (questions):
         return loc_answers
 
 # Funktion zum erstellen des Verzeichnisses des square Raumes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
-def square (s_x1, s_y1, s_x2, s_y2):
+def square (s_x1, s_y1, s_x2, s_y2, plan_path):
         answers = dialog(questions_s)
         if answers is None:
                 return
@@ -73,10 +79,10 @@ def square (s_x1, s_y1, s_x2, s_y2):
                         s_y2/scale
                 ]
                 }
-                add_room(data)
+                add_room(data, plan_path)
 
 # Funktion zum erstellen des Verzeichnisses des circle Raumes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
-def circle (c_x, c_y, radiuspos_x, radiuspos_y):
+def circle (c_x, c_y, radiuspos_x, radiuspos_y, plan_path):
         answers = dialog(questions_c)
         if answers is None:
                 return
@@ -94,10 +100,10 @@ def circle (c_x, c_y, radiuspos_x, radiuspos_y):
                         math.dist((c_x/scale, c_y/scale), (radiuspos_x/scale, radiuspos_y/scale))
                 ]
                 }
-                add_room(data)
+                add_room(data, plan_path)
 
 # Funktion zum erstellen des Verzeichnisses des Wegpunktes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
-def waypoint (w_x, w_y):
+def waypoint (w_x, w_y, plan_path):
         answers = dialog(questions_w)
 
         if answers is None:
@@ -114,52 +120,54 @@ def waypoint (w_x, w_y):
                         f"{answers[4]}"
                 ]
                 }
-                add_waypoint(data)
+                add_waypoint(data, plan_path)
 
 # Funktion zum erstellen des Verzeichnisses des polygon Raumes // answers: Liste mit den Eingaben; data: speichert das Verzeichnis
-def polygon (p_coords):
+def polygon (p_coords, plan_path):
         answers = dialog(question_p)
         if answers is None:
                 return
         else:
                 data = {
                         "names": [
-                                f"{answers[0]}",
+                                f"P{answers[0]}",
                                 f"{answers[1]}",
                                 f"{answers[2]}"
                         ],
                         "shape": "poly",
                         "coords": p_coords
                 }
-                add_room(data)  
+                add_room(data, plan_path)  
 
 # Funktion zum laden, bearbeiten (hinzufügen des neuen Raumes) und speichern der Json Datei // current_data: speichert die aktuelle Json Datei
-def add_room(data):
-        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "r", encoding="utf-8") as file:
+def add_room(data, plan_path):
+        with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
                 current_data = json.load(file)
 
-        current_data["maps"][0]["rooms"].append(data)
+        current_data["rooms"].append(data)
 
-        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "w", encoding="utf-8") as file:
+        with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
                 json.dump(current_data, file, indent=4, ensure_ascii=False)
 
 # Funktion zum laden, bearbeiten (hinzufügen des neuen Wegpunktes) und speichern der Json Datei // current_data: speichert die aktuelle Json Datei
-def add_waypoint(data):
-        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "r", encoding="utf-8") as file:
+def add_waypoint(data, plan_path):
+        with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
                 current_data = json.load(file)
         
-        current_data["maps"][0]["waypoints"].append(data)
+        current_data["waypoints"].append(data)
 
-        with open(r"Test_Gebäudeplan\Gebäudeplan_Bsp.json", "w", encoding="utf-8") as file:
+        with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
                 json.dump(current_data, file, indent=4)
+
+def json_path(plan_path):
+        path_objekt = Path(plan_path)
+        json_folder = path_objekt.parent.parent
+        json_name = f"{json_folder.name}.json"
+        json_path = f"{json_folder}/{json_name}"
+        return json_path
 
 # initialisieren von Pygame
 pygame.init()
-
-# erstellen der Variablen für den Gebäudeplan // screen: Größe des Fensters; plan: laden des Gebäudeplans
-screen = pygame.display.set_mode((1500, 1000))
-plan = pygame.image.load(r"Test_Gebäudeplan\facility\Gymnasium_Wernigerode\building_01\floor_01\plans\Gebäudeplan_Bsp.png")
-plan = pygame.transform.scale(plan, (1500, 1000))
 
 # erstellen der Positionsvariablen für den square Raum // s_x1, s_y1: erste Koordinate (obere linke Ecke); s_x2, s_y2: zweite Koordinate (untere rechte Ecke)
 s_x1 = 0
@@ -194,11 +202,34 @@ while_running_w_del = True
 # erstellen der Variable zum Anzeigen der Info
 info_shown = False
 
-# erstellen der scale
-scale = 1000/plan.get_width()
+# erstellen der Variable zum Anzeigen der Pfadeingabe
+path_shown = False
 
 running = True
 while running:
+
+        # Abfrage des Bildpfades
+        if not path_shown:
+                plan_path = plan_selection()
+                print(plan_path)
+
+                plan = pygame.image.load(fr"{plan_path}")
+                plan_w, plan_h = plan.get_size()
+
+                screen_info = pygame.display.Info()
+                screen_w, screen_h = screen_info.current_w * 0.8, screen_info.current_h * 0.8
+
+                faktor = min(screen_w/plan_w, screen_h/plan_h, 1.0)
+
+                new_w, new_h = int(plan_w*faktor), int(plan_h*faktor)
+
+                screen = pygame.display.set_mode((new_w, new_h))
+                plan = pygame.transform.scale(plan, (new_w, new_h))
+
+                # erstellen der scale
+                scale = 1000/int(plan_w*faktor)
+
+                path_shown = True
 
         # Anzeigen der Info beim starten des Programms
         if not info_shown:
@@ -228,6 +259,8 @@ while running:
                         
                         print("Gebe die Koordinate der oberen, linken Ecke ein\n")
                         while while_running_s:
+                                screen.blit(plan, (0, 0))
+                                pygame.display.flip()
                                 for event in pygame.event.get():
                                         # zurücksetzen der Variablen zum Abbrechen der coordeingabe
                                         while_running_s_del = True
@@ -246,7 +279,7 @@ while running:
                                                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                                                         s_x2, s_y2 = pygame.mouse.get_pos()
                                                                         print(f"Abschluss der Koordinateneingabe\nKoordinaten: [{s_x1}, {s_y1}, {s_x2}, {s_y2}]\n")
-                                                                        square(s_x1, s_y1, s_x2, s_y2)
+                                                                        square(s_x1, s_y1, s_x2, s_y2, plan_path)
                                                                         while_running_s = False
                                                                 
                                                                 # löschen der letzen Koordinate
@@ -285,6 +318,8 @@ while running:
                         
                         print("Gebe die Koordinaten des Mittelpunkt des Kreises ein\n")
                         while while_running_c:
+                                screen.blit(plan, (0, 0))
+                                pygame.display.flip()
                                 for event in pygame.event.get():
                                         # zurücksetzen der Variablen zum Abbrechen der coordeingabe
                                         while_running_c_del = True
@@ -303,7 +338,7 @@ while running:
                                                                 if event.type == pygame.MOUSEBUTTONDOWN:
                                                                         radius_pos_x, radius_pos_y = pygame.mouse.get_pos()
                                                                         print(f"Abschluss der Koordinateneingabe\nKoordinaten: [{c_x}, {c_y}; Radiuskoordinaten: {radius_pos_x}, {radius_pos_y}; Radius: {math.dist((c_x/scale, c_y/scale), (radius_pos_x/scale, radius_pos_y/scale))}]\n")
-                                                                        circle(c_x, c_y, radius_pos_x, radius_pos_y)
+                                                                        circle(c_x, c_y, radius_pos_x, radius_pos_y, plan_path)
                                                                         while_running_c = False
 
                                                                 # löschen der letzen Koordinate
@@ -342,6 +377,8 @@ while running:
                         
                         print("Gebe die Koordinaten des Wegpunktes ein\n")
                         while while_running_w:
+                                screen.blit(plan, (0, 0))
+                                pygame.display.flip()
                                 for event in pygame.event.get():
 
                                         # speichern der Koordinate
@@ -369,6 +406,8 @@ while running:
 
                         print("Gebe die Koordinaten einer Ecke des Poligons an\n")
                         while while_running_p:
+                                screen.blit(plan, (0, 0))
+                                pygame.display.flip()
                                 for event in pygame.event.get():
 
                                         # speichern der Koordinate
@@ -390,7 +429,7 @@ while running:
                                         # abschließen der Koordinateneingabe
                                         elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                                                 print(f"Abschluss der Koordinateneingabe\nKoordinaten:{p_coords}")
-                                                polygon(p_coords)
+                                                polygon(p_coords, plan_path)
                                                 while_running_p = False
                                         
                                         # stoppen des Programms
