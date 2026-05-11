@@ -1,4 +1,5 @@
 import customtkinter
+import pygame
 import json
 import math
 from pathlib import Path
@@ -39,6 +40,17 @@ def plan_selection():
         print("Wähle den Gebäudeplan aus")
         plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("PNG Datei", "*.png")], initialdir=r"Test_Gebäudeplan")
         return plan_path
+
+def text_display(screen, text, font_size, x, y):
+        font = pygame.font.SysFont(None, font_size)
+        img = font.render(text, True, (255, 255, 255))
+        img_w, img_h = img.get_size()
+        screen.blit(img, (x - img_w / 2, y - img_h / 2))
+
+def question_display(screen, questions, index):
+        font = pygame.font.SysFont(None, 30)
+        img = font.render(questions[index], True, (255, 255, 255))
+        screen.blit(img, ())
 
 # Funktion zum Erstellen des Dialogfensters und der Eingabeverarbeitung // loc_answers: lokale Variable, die die Eingaben speichert; answ: lokale Variable, die die aktuelle Eingabe speichert
 def dialog (questions):
