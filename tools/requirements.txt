@@ -1,4 +1,5 @@
-pygame
-customtkinter
+pygame-ce
+easypygamewidgets
 json
 pathlib
+ctypes
