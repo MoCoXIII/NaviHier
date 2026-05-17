@@ -39,7 +39,7 @@ question_p = [
 def plan_selection():
         print("Wähle den Gebäudeplan aus")
         try: 
-            plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("PNG Datei", "*.png")], initialdir=r"Test_Gebäudeplan")
+            plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("All", "*.png;*.jpg;*.jpeg;*.webp"), ("PNG Datei", "*.png"), ("JPG Datei", "*.jpg"), ("JPEG Datei", "*.jpeg"), ("WEBP Datei", "*.webp")], initialdir=r"Test_Gebäudeplan")
             if plan_path == "": 
                 raise FileNotFoundError
             return plan_path
