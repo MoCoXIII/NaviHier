@@ -38,10 +38,16 @@ question_p = [
 
 def plan_selection():
         print("Wähle den Gebäudeplan aus")
-        plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("PNG Datei", "*.png")], initialdir=r"Test_Gebäudeplan")
-        return plan_path
+        try: 
+            plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("PNG Datei", "*.png")], initialdir=r"Test_Gebäudeplan")
+            if plan_path == "": 
+                raise FileNotFoundError
+            return plan_path
+        except FileNotFoundError: 
+            exit(0)
 
 def text_display(screen, text, font_size, x, y):
+        
         font = pygame.font.SysFont(None, font_size)
         img = font.render(text, True, (255, 255, 255))
         img_w, img_h = img.get_size()
