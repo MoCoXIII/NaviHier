@@ -1,6 +1,6 @@
 # coordsbestimmung_überarbeitet
 # Theo Glase
-# 12.05.2026
+# 18.05.2026
 
 import pygame
 import easypygamewidgets as epw
@@ -54,6 +54,8 @@ appereance_mode = ctypes.c_int(2)                                               
 ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(appereance_mode), ctypes.sizeof(appereance_mode))     # DwmSetWindowAttribute: Funktion zum Ändern des Anzeigemodus der Titelleiste       # ctypes.byref: Funktion zu Bestimmen des Speicherorts der Variable; ctypes.sizeof: Funktion zum Bestimmen des Speicherplatzes der Variable (int: 4)
 pygame.event.pump()                                                                                                     # update von Pygame
 
+info_icon = pygame.image.load("assets/info_icon.png")
+
 def update_ui(plan):
     screen_info = pygame.display.Info()
     screen_w, screen_h = screen_info.current_w, screen_info.current_h
@@ -64,19 +66,24 @@ def update_ui(plan):
     plan_start_x = (screen_w - new_w) // 2
     plan_start_y = (screen_h - new_h) // 2
     scale = 1000 / int(plan_w*faktor)
+    # Plan und Überschrift
     widget_dic["plan"].config(surface = plan)
     widget_dic["plan"].place(x = plan_start_x, y = plan_start_y)
     widget_dic["title"].place(x = plan_start_x + new_w // 2 - widget_dic["title"].width // 2, y = plan_start_y // 2 - widget_dic["title"].height // 2)
+    # Status
     widget_dic["status_title_label"].place(x = plan_start_x, y = screen_h - plan_start_y // 2 - widget_dic["status_title_label"].height)
     widget_dic["status_label"].place(x = plan_start_x, y = screen_h - plan_start_y // 2)
     widget_dic["status_label"].config(min_width = 2 * new_w // 3)
+    # Raumtyp
     widget_dic["room_type_label"].place(x = plan_start_x // 2 - widget_dic["room_type_label"].width // 2, y = plan_start_y)
     widget_dic["square_button_label"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 3 - widget_dic["square_button_label"].height)
     widget_dic["square_button"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 3)
     widget_dic["polygon_button_label"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 2 - widget_dic["polygon_button_label"].height)
     widget_dic["polygon_button"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 2)
     widget_dic["room_type_cancel_button"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + 2 * new_h // 3)
-
+    # Info Symbol
+    widget_dic["info_icon"].scale(0.05, 0)
+    widget_dic["info_icon"].place(x = screen_w - info_icon.get_width() * 0.05 - 20, y = 20)
     return scale
 
 def square_selected():
@@ -118,14 +125,15 @@ widget_dic = {
     "square_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = square_selected),
     "polygon_button_label": epw.Label(text="Polygon Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left"),
     "polygon_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = polygon_selected),
-    "room_type_cancel_button": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_type_cancel)
+    "room_type_cancel_button": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_type_cancel),
+    "info_icon": epw.Surface(info_icon)
 }
 
 update_ui(plan)
 running = True
 while running:
     # färben des Hintergrunds
-    screen.fill((47, 91, 235))
+    screen.fill((30, 30, 30))
 
     for event in pygame.event.get():
         if event.type == pygame.VIDEORESIZE:
