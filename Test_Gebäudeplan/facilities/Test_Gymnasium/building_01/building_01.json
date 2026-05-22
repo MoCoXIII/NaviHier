@@ -1,10 +1,14 @@
-[
-    {
-        "name": "floor_01",
-        "path": "floor_01/floor_01.json"
-    },
-    {
-        "name": "floor_02",
-        "path": "floor_02/floor_02.json"
-    }
-]
+{
+    "name": "",
+    "location": "",
+    "floors": [
+        {
+            "name": "floor_01",
+            "path": "floor_01/floor_01.json"
+        },
+        {
+            "name": "floor_02",
+            "path": "floor_02/floor_02.json"
+        }
+    ]
+}
