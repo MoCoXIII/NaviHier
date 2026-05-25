@@ -3,7 +3,8 @@ const app = express();
 const port = 8080;
 
 // https://expressjs.com/en/5x/api.html#express.json
-// die Middleware erstellt den req.body Eintrag aus empfangenen JSON-Daten (sonst ist req.body undefined)
+// die Middleware erstellt den req.body Eintrag aus empfangenen JSON-Daten
+// (sonst ist req.body undefined)
 app.use(express.json());
 // app.use() führt Middleware für alle Anfragen aus;
 // next() lässt danach das nächste Callback die Anfrage verarbeiten
@@ -20,6 +21,11 @@ app.post("/server", (req, res) => {
   console.log(data);
   res.json(JSON.stringify(data));
 
+});
+
+app.get("/rooms", (req, res) => {
+  let rooms = require("./rooms.json");
+  res.json(JSON.stringify(rooms));
 });
 
 app.listen(port, () => {
