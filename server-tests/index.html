@@ -6,7 +6,10 @@
 </head>
 <body>
     <div>
-        <input type="text" id="input">
+        <input type="text" id="input" list="rooms">
+        <datalist id="rooms">
+            <!-- Räume aus Serverabfrage werden hier platziert -->
+        </datalist>
         <button id="send" disabled>Send</button>
         <div id="output"></div>
     </div>
