@@ -4,19 +4,13 @@
             ["P1", "Mathe", "Mathematik"],
             ["P2", "Deutsch"]
         ],
-        "location": {
-            "longitude": 0,
-            "latitude": 0
-        }
+        "location": "Berlin"
     },
     "Gebäude B": {
         "rooms": [
             ["D1", "Kunst"],
             ["D2", "Deutsch"]
         ],
-        "location": {
-            "longitude": 45,
-            "latitude": 45
-        }
+        "location": "45,45"
     }
 }

@@ -55,7 +55,17 @@ document.getElementById('send').addEventListener('click', () => {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {  // 200 = OK
                 const response = JSON.parse(xhr.responseText);
-                document.getElementById('output').textContent = response;
+
+                const building = response.building;
+                const location = response.location;
+                const room = response.room;
+
+                // Google Maps URL Documentation für den Google Maps Link
+                // https://developers.google.com/maps/documentation/urls/get-started#directions-action
+                // target="_blank" bedeutet, dass der Link in einem neuen Tab geöffnet wird
+                const responseHTML = `<a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank">Navigation zu ${building} über Google Maps</a>`;
+
+                document.getElementById('output').innerHTML = responseHTML;
             } else {
                 console.error('Error:', xhr.status);
             }
@@ -68,6 +78,10 @@ document.getElementById('send').addEventListener('click', () => {
             input = option.dataset.value;  // ersetze menschlich lesefreundlichen Text durch maschinenfreundlichen Text
             break;
         }
+    }
+    if (input === document.getElementById('input').value) {
+        alert("Diesen Raum gibt es nicht. Bitte wählen Sie einen der vordefinierten Räume aus.");
+        return;
     }
     let [building, room] = input.split(", ");
     xhr.send(JSON.stringify({ building, room }));

@@ -19,15 +19,13 @@ app.post("/server", (req, res) => {
 
   let data = req.body;
 
-  console.log(data);
-
   let building = data.building;
   let room = data.room;
 
   const rooms = require("./rooms.json");
   let location = rooms[building].location;
 
-  res.json(JSON.stringify({ location, room }));
+  res.json({ building, location, room });
 
 });
 
