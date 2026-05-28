@@ -18,8 +18,16 @@ app.use((req, res, next) => {
 app.post("/server", (req, res) => {
 
   let data = req.body;
+
   console.log(data);
-  res.json(JSON.stringify(data));
+
+  let building = data.building;
+  let room = data.room;
+
+  const rooms = require("./rooms.json");
+  let location = rooms[building].location;
+
+  res.json(JSON.stringify({ location, room }));
 
 });
 

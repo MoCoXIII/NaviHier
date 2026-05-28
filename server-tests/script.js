@@ -27,7 +27,7 @@ rooms_xhr.onreadystatechange = function () {
                 let location = rooms[building].location;
                 for (let room of rooms[building].rooms) {
                     const option = document.createElement('option');
-                    option.value = building + ", " + room[0];
+                    option.dataset.value = building + ", " + room[0];
                     option.textContent = room.join(" / ") + " (" + building + ")";
                     roomsList.appendChild(option);
                 }
@@ -44,7 +44,6 @@ rooms_xhr.send();
 
 
 document.getElementById('send').addEventListener('click', () => {
-    const input = document.getElementById('input').value;
     const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
     xhr.open('POST', serverURL + "server");
 
@@ -62,5 +61,14 @@ document.getElementById('send').addEventListener('click', () => {
             }
         }
     };
-    xhr.send(JSON.stringify({ input }));  // sendet "{input: ...}"
+
+    let input = document.getElementById('input').value;
+    for (let option of document.querySelectorAll('#rooms option')) {
+        if (option.textContent === input) {
+            input = option.dataset.value;  // ersetze menschlich lesefreundlichen Text durch maschinenfreundlichen Text
+            break;
+        }
+    }
+    let [building, room] = input.split(", ");
+    xhr.send(JSON.stringify({ building, room }));
 });
