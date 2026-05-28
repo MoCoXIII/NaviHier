@@ -1,6 +1,18 @@
 // Raumliste zur lokalen Suche vom Server abfragen
 const rooms_xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
-const serverURL = 'http://localhost:8080/';
+
+// Damit die Anwendung auch auf anderen Geräten im lokalen Netzwerk funktioniert,
+// wird die IP-Adresse des Backend-Hosts angegeben.
+// Da sich diese als dynamische IP-Adresse ändern kann, soll sie bei Bedarf geändert werden können
+// const networkAdress = prompt("Geben Sie die IP-Adresse des Host-Geräts im Netzwerk ein: (192.168.___.___)", _default='178.130');
+const networkAdress = '178.130';
+const localServerHostAdress = '192.168.' + networkAdress;
+const serverURL = 'http://' + localServerHostAdress + ':8080/';
+
+// sobald auf einem Server mit Domain gehostet wird, kann diese angegeben werden
+// const serverURL = 'https://backend.navihier.de/';
+
+
 rooms_xhr.open('GET', serverURL + "rooms");
 rooms_xhr.onreadystatechange = function () {
     if (rooms_xhr.readyState === XMLHttpRequest.DONE) {
