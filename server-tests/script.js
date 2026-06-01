@@ -60,10 +60,14 @@ document.getElementById('send').addEventListener('click', () => {
                 const location = response.location;
                 const room = response.room;
 
-                // Google Maps URL Documentation für den Google Maps Link
-                // https://developers.google.com/maps/documentation/urls/get-started#directions-action
-                // target="_blank" bedeutet, dass der Link in einem neuen Tab geöffnet wird
-                const responseHTML = `<a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank">Navigation zu ${building} über Google Maps</a>`;
+                const responseHTML = `<span>Navigation zu ${building} über</span><br>`
+                    // Google Maps URL Documentation für den Google Maps Link
+                    // https://developers.google.com/maps/documentation/urls/get-started#directions-action
+                    // target="_blank" bedeutet, dass der Link in einem neuen Tab geöffnet wird
+                    + `<a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank">Google Maps</a><br>`
+                    // Apple Maps URL Documentation für den Apple Maps Link
+                    // https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
+                    + `<a href="https://maps.apple.com/?daddr=${location}" target="_blank">Apple Maps</a>`;
 
                 document.getElementById('output').innerHTML = responseHTML;
             } else {
