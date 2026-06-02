@@ -75,12 +75,15 @@ def update_ui(widget_dic):
     widget_dic["status_label"].place(x = screen_w * 0.3, y = screen_h * 0.8 + widget_dic["status_title_label"].height)
     widget_dic["status_label"].config(min_width = 2 * new_w // 3)
     # Raumtyp
-    widget_dic["room_type_label"].place(x = plan_start_x // 2 - widget_dic["room_type_label"].width // 2, y = plan_start_y)
-    widget_dic["square_button_label"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 3 - widget_dic["square_button_label"].height)
-    widget_dic["square_button"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 3)
-    widget_dic["polygon_button_label"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 2 - widget_dic["polygon_button_label"].height)
-    widget_dic["polygon_button"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + new_h // 2)
-    widget_dic["room_type_cancel_button"].place(x = plan_start_x // 4 - widget_dic["square_button_label"].width // 2, y = plan_start_y + 2 * new_h // 3)
+    widget_dic["room_type_label"].place(x = screen_w * 0.15 - widget_dic["room_type_label"].width // 2, y = screen_h * 0.25)
+    widget_dic["square_button_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["square_button_label"].height)
+    widget_dic["square_button"].place(x = 60, y = screen_h * 0.4)
+    widget_dic["polygon_button_label"].place(x = 60, y = screen_h * 0.5 - widget_dic["polygon_button_label"].height)
+    widget_dic["polygon_button"].place(x = 60, y = screen_h * 0.5)
+    widget_dic["waypoint_button_label"].place(x = 60, y = screen_h * 0.6 - widget_dic["waypoint_button_label"].height)
+    widget_dic["waypoint_button"].place(x = 60, y = screen_h * 0.6)
+    widget_dic["room_create_submit_button"].place(x = 60 + widget_dic["square_button"].width + (screen_w * 0.3 - (60 + widget_dic["square_button"].width)) // 2 - widget_dic["room_create_submit_button"].width // 2, y = screen_h * 0.4)
+    widget_dic["room_create_cancel_button"].place(x = widget_dic["room_create_submit_button"].x, y = screen_h * 0.5 - widget_dic["room_create_cancel_button"].height)
     # Info Symbol
     widget_dic["info_icon"].scale(0.05, 0)
     widget_dic["info_icon"].place(x = screen_w - info_icon.get_width() * 0.05 - 20, y = 20)
@@ -98,18 +101,37 @@ def polygon_selected():
         shape = 2
         widget_dic["status_label"].config(text = "Polygonaler Raumtyp Ausgewählt")
 
-def room_type_cancel():
-    global shape, widget_dic, s_coords, p_coords, s_coords_count, p_coords_count
+def waypoint_selected():
+    global shape, widget_dic
+    if shape == 0:
+        shape = 3
+        widget_dic["status_label"].config(text = "Waypoint Ausgewählt")
+
+def room_create_submit():
+    pass
+
+def room_create_cancel():
+    global shape, widget_dic, s_coords, p_coords, s_coords_count, p_coords_count, s_submit, p_submit, w_submit
     shape = 0
     s_coords.clear()
     p_coords.clear()
     s_coords_count = 0
     p_coords_count = 0
+    s_submit = False
+    p_submit = False
+    w_submit = False
     widget_dic["status_label"].config(text = "Zurücksetzen des Raumtyps")
 
+
+room_creation_screen = epw.Screen(visible = True)
 widget_dic = {
+    # Bildschirm
+    "room_creation_screen": room_creation_screen,
+    # plan
     "plan": epw.Surface(plan),
+    # 
     "title": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
+    # status label
     "status_title_label": epw.Label(text="Status", font=epw.SysFont(font="Calibri", font_size=40, bold = True), alignment_spacing = 0, alignment = "left"),
     "status_label": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30),
                                                         alignment = "left",
@@ -120,12 +142,17 @@ widget_dic = {
                                                         top_right_corner_radius = 15, 
                                                         bottom_left_corner_radius = 15, 
                                                         bottom_right_corner_radius = 15),
-    "room_type_label": epw.Label(text="Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold = True)),
-    "square_button_label": epw.Label(text="Quadratischer Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left"),
-    "square_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = square_selected),
-    "polygon_button_label": epw.Label(text="Polygon Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left"),
-    "polygon_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = polygon_selected),
-    "room_type_cancel_button": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_type_cancel),
+    # Raumtyp
+    "room_type_label": epw.Label(text="Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_creation_screen),
+    "square_button_label": epw.Label(text="Quadratischer Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
+    "square_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = square_selected,screen = room_creation_screen),
+    "polygon_button_label": epw.Label(text="Polygon Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
+    "polygon_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = polygon_selected,screen = room_creation_screen),
+    "waypoint_button_label": epw.Label(text="Wegpunkt", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
+    "waypoint_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = waypoint_selected,screen = room_creation_screen),
+    "room_create_submit_button": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_submit,screen = room_creation_screen),
+    "room_create_cancel_button": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_cancel,screen = room_creation_screen),
+    # info icon
     "info_icon": epw.Surface(info_icon)
 }
 
@@ -134,6 +161,16 @@ running = True
 while running:
     # färben des Hintergrunds
     screen.fill((30, 30, 30))
+
+    if s_submit == True or p_submit == True or w_submit == True:
+        widget_dic["room_create_submit_button"].config(state = "enabled")
+    else:
+        widget_dic["room_create_submit_button"].config(state = "disabled")
+
+    if shape == 0:
+        widget_dic["room_create_cancel_button"].config(state = "disabled")
+    else:
+        widget_dic["room_create_cancel_button"].config(state = "enabled")
 
     for event in pygame.event.get():
         if event.type == pygame.VIDEORESIZE:
@@ -173,15 +210,15 @@ while running:
 
             elif shape == 3:
                 pos = pygame.mouse.get_pos()
-                w_x, w_y = int((pos[0] - plan_start_x) / scale, (pos[1] - plan_start_y) / scale)
+                w_x, w_y = int((pos[0] - plan_start_x) / scale), int((pos[1] - plan_start_y) / scale)
                 if w_coords_count == 0 and w_x >= 0 and w_x <= plan_w and w_y >= 0 and w_y <= plan_h:
                     w_coords.append(w_x)
                     w_coords.append(w_y)
-                    widget_dic["status_label"].config(text = f"Die Koordinate{s_x}, {s_y} wurde hinzugefügt.")
+                    widget_dic["status_label"].config(text = f"Die Koordinate {w_x}, {w_y} wurde hinzugefügt.")
                     if w_coords_count == 1:
                         w_submit = True
                 else:
-                    widget_dic["status_label"].config(text = f"Es wurde bereits eine Koordinate hinzugefügt. ({w_coords[0]}, {w_coords[1]})")
+                    pass
         
         elif event. type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
             if shape == 1 and s_coords_count > 0:
@@ -209,7 +246,7 @@ while running:
                 if w_coords_count == 0:
                     w_submit = False
             
-        elif event.type == pygame.MOUSEBUTTONDOWN and event.key == pygame.K_ESCAPE and shape == 1 or shape == 2 or shape == 3:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and (shape == 1 or shape == 2 or shape == 3):
             s_coords.clear()
             p_coords.clear()
             w_coords.clear()
