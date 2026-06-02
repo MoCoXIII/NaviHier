@@ -53,26 +53,26 @@ ctypes.windll.user32.ShowWindow(hwnd, 3)                                        
 appereance_mode = ctypes.c_int(2)                                                                                       # appereance_mode: Variable zum Speichern des Anzeigemodus der Titelleiste // 0 = Light Mode, 1 = Dark Mode, 2 = Systemstandard
 ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(appereance_mode), ctypes.sizeof(appereance_mode))     # DwmSetWindowAttribute: Funktion zum Ändern des Anzeigemodus der Titelleiste       # ctypes.byref: Funktion zu Bestimmen des Speicherorts der Variable; ctypes.sizeof: Funktion zum Bestimmen des Speicherplatzes der Variable (int: 4)
 pygame.event.pump()                                                                                                     # update von Pygame
-
 info_icon = pygame.image.load("assets/info_icon.png")
 
-def update_ui(plan):
+def update_ui(widget_dic):
+    widget_dic["plan"].config(surface = plan)
+    widget_dic["plan"].place(x = 30, y = 25, mode = "%")
     screen_info = pygame.display.Info()
     screen_w, screen_h = screen_info.current_w, screen_info.current_h
-    pygame.display.set_mode((screen_w, screen_h), pygame.RESIZABLE)
-    faktor = min(screen_w/plan_w, screen_h/plan_h, 1.0)
-    new_w, new_h = int(plan_w*faktor), int(plan_h*faktor)
-    plan = pygame.transform.scale(plan, (new_w, new_h))
-    plan_start_x = (screen_w - new_w) // 2
-    plan_start_y = (screen_h - new_h) // 2
-    scale = 1000 / int(plan_w*faktor)
+    max_w = screen_w * 0.40
+    max_h = screen_h * 0.50
+    faktor = min(max_w / plan_w, max_h / plan_h)
+    new_w = int(plan_w * faktor)
+    new_h = int(plan_h * faktor)
+    widget_dic["plan"].scale(faktor)
+    plan_start_x = widget_dic["plan"].x
+    plan_start_y = widget_dic["plan"].y
     # Plan und Überschrift
-    widget_dic["plan"].config(surface = plan)
-    widget_dic["plan"].place(x = plan_start_x, y = plan_start_y)
     widget_dic["title"].place(x = plan_start_x + new_w // 2 - widget_dic["title"].width // 2, y = plan_start_y // 2 - widget_dic["title"].height // 2)
     # Status
-    widget_dic["status_title_label"].place(x = plan_start_x, y = screen_h - plan_start_y // 2 - widget_dic["status_title_label"].height)
-    widget_dic["status_label"].place(x = plan_start_x, y = screen_h - plan_start_y // 2)
+    widget_dic["status_title_label"].place(x = screen_w * 0.3, y = screen_h * 0.8)
+    widget_dic["status_label"].place(x = screen_w * 0.3, y = screen_h * 0.8 + widget_dic["status_title_label"].height)
     widget_dic["status_label"].config(min_width = 2 * new_w // 3)
     # Raumtyp
     widget_dic["room_type_label"].place(x = plan_start_x // 2 - widget_dic["room_type_label"].width // 2, y = plan_start_y)
@@ -84,7 +84,7 @@ def update_ui(plan):
     # Info Symbol
     widget_dic["info_icon"].scale(0.05, 0)
     widget_dic["info_icon"].place(x = screen_w - info_icon.get_width() * 0.05 - 20, y = 20)
-    return scale
+    return faktor
 
 def square_selected():
     global shape, widget_dic
@@ -129,7 +129,7 @@ widget_dic = {
     "info_icon": epw.Surface(info_icon)
 }
 
-update_ui(plan)
+update_ui(widget_dic)
 running = True
 while running:
     # färben des Hintergrunds
@@ -137,7 +137,7 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.VIDEORESIZE:
-            scale = update_ui(plan)
+            scale = update_ui(widget_dic)
             plan_start_x = widget_dic["plan"].x
             plan_start_y = widget_dic["plan"].y
 
@@ -163,20 +163,20 @@ while running:
             elif shape == 2:
                 pos = pygame.mouse.get_pos()
                 p_x, p_y = int((pos[0] - plan_start_x) / scale), int((pos[1] - plan_start_y) / scale)
-                if s_x >= 0 and s_x <= plan_w and s_y >= 0 and s_y <= plan_h:
-                    p_coords.append(p_x / scale)
-                    p_coords.append(p_y / scale)
+                if p_x >= 0 and p_x <= plan_w and p_y >= 0 and p_y <= plan_h:
+                    p_coords.append(p_x)
+                    p_coords.append(p_y)
                     widget_dic["status_label"].config(text = f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")
                     p_coords_count += 1
                     if p_coords_count >= 3:
                         p_submit = True
 
             elif shape == 3:
-                if w_coords_count == 0:
-                    pos = pygame.mouse.get_pos()
-                    w_x, w_y = pos[0] - plan_start_x, pos[1] - plan_start_y
-                    w_coords.append(w_x / scale)
-                    w_coords.append(w_y / scale)
+                pos = pygame.mouse.get_pos()
+                w_x, w_y = int((pos[0] - plan_start_x) / scale, (pos[1] - plan_start_y) / scale)
+                if w_coords_count == 0 and w_x >= 0 and w_x <= plan_w and w_y >= 0 and w_y <= plan_h:
+                    w_coords.append(w_x)
+                    w_coords.append(w_y)
                     widget_dic["status_label"].config(text = f"Die Koordinate{s_x}, {s_y} wurde hinzugefügt.")
                     if w_coords_count == 1:
                         w_submit = True
