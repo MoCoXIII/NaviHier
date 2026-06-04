@@ -1,6 +1,6 @@
 # coordsbestimmung_überarbeitet
 # Theo Glase
-# 18.05.2026
+# 04.06.2026
 
 import pygame
 import easypygamewidgets as epw
@@ -73,7 +73,7 @@ def update_ui(widget_dic):
     # Status
     widget_dic["status_title_label"].place(x = screen_w * 0.3, y = screen_h * 0.8)
     widget_dic["status_label"].place(x = screen_w * 0.3, y = screen_h * 0.8 + widget_dic["status_title_label"].height)
-    widget_dic["status_label"].config(min_width = 2 * new_w // 3)
+    widget_dic["status_label"].config(min_width = 2 * (screen_w * 0.4) // 3)
     # Raumtyp
     widget_dic["room_type_label"].place(x = screen_w * 0.15 - widget_dic["room_type_label"].width // 2, y = screen_h * 0.25)
     widget_dic["square_button_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["square_button_label"].height)
@@ -84,6 +84,20 @@ def update_ui(widget_dic):
     widget_dic["waypoint_button"].place(x = 60, y = screen_h * 0.6)
     widget_dic["room_create_submit_button"].place(x = 60 + widget_dic["square_button"].width + (screen_w * 0.3 - (60 + widget_dic["square_button"].width)) // 2 - widget_dic["room_create_submit_button"].width // 2, y = screen_h * 0.4)
     widget_dic["room_create_cancel_button"].place(x = widget_dic["room_create_submit_button"].x, y = screen_h * 0.5 - widget_dic["room_create_cancel_button"].height)
+    # Rauminfo
+    widget_dic["room_info_label"].place(x = screen_w * 0.15 - widget_dic["room_info_label"].width // 2, y = screen_h * 0.25),
+    widget_dic["room_id_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["room_id_label"].height)
+    widget_dic["entry_background_label1"].place(x = 60, y = screen_h * 0.4)
+    widget_dic["room_id_entry"].place(x = 60, y = screen_h * 0.4)
+    widget_dic["room_name_label"].place(x = 60, y = screen_h * 0.5 - widget_dic["room_name_label"].height)
+    widget_dic["entry_background_label2"].place(x = 60, y = screen_h * 0.5)
+    widget_dic["room_name_entry"].place(x = 60, y = screen_h * 0.5)
+    widget_dic["room_prof_label"].place(x = 60, y = screen_h * 0.6 - widget_dic["room_prof_label"].height)
+    widget_dic["entry_background_label3"].place(x = 60, y = screen_h * 0.6)
+    widget_dic["room_prof_entry"].place(x = 60, y = screen_h * 0.6)
+    widget_dic["room_extrainfo_label"].place(x = 60, y = screen_h * 0.7 - widget_dic["room_extrainfo_label"].height)
+    widget_dic["entry_background_label4"].place(x = 60, y = screen_h * 0.7)
+    widget_dic["room_extrainfo_entry"].place(x = 60, y = screen_h * 0.7)
     # Info Symbol
     widget_dic["info_icon"].scale(0.05, 0)
     widget_dic["info_icon"].place(x = screen_w - info_icon.get_width() * 0.05 - 20, y = 20)
@@ -108,7 +122,8 @@ def waypoint_selected():
         widget_dic["status_label"].config(text = "Waypoint Ausgewählt")
 
 def room_create_submit():
-    pass
+    widget_dic["room_creation_screen"].hide()
+    widget_dic["room_info_screen"].show()
 
 def room_create_cancel():
     global shape, widget_dic, s_coords, p_coords, s_coords_count, p_coords_count, s_submit, p_submit, w_submit
@@ -122,18 +137,62 @@ def room_create_cancel():
     w_submit = False
     widget_dic["status_label"].config(text = "Zurücksetzen des Raumtyps")
 
+def room_info_submit_button_delay():
+    widget_dic["room_info_submit_button"].config(visible = True)
+
+def room_info_submit_button_show(info_type):
+    screen_info = pygame.display.Info()
+    screen_w = screen_info.current_w
+    widget_dic["room_info_submit_button"].schedule(room_info_submit_button_delay, 1)
+    if info_type == "id":
+        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_id_entry"].y)
+    elif info_type == "name":
+        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_name_entry"].y)
+    elif info_type == "prof":
+        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_prof_entry"].y)
+    elif info_type == "extra":
+        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_extrainfo_entry"].y)
+
+def room_info_submit_button_hide():
+    widget_dic["room_info_submit_button"].config(visible = False)
+
+def room_info_submit():
+    screen_info = pygame.display.Info()
+    screen_w, screen_h = screen_info.current_w, screen_info.current_h
+    if widget_dic["room_info_submit_button"].y == screen_h * 0.4:
+        print("Platzhalter")
+    elif widget_dic["room_info_submit_button"].y == screen_h * 0.5:
+        print("Platzhalter")
+    elif widget_dic["room_info_submit_button"].y == screen_h * 0.6:
+        print("Platzhalter")
+    elif widget_dic["room_info_submit_button"].y == screen_h * 0.7:
+        print("Platzhalter")
 
 room_creation_screen = epw.Screen(visible = True)
+room_info_screen = epw.Screen(visible = False)
+def create_background_label():
+    screen_info = pygame.display.Info()
+    screen_w = screen_info.current_w
+    return epw.Label(text = "", screen = room_info_screen, active_unpressed_background_color = (50, 50, 50), 
+                                                            active_hover_background_color = (50, 50, 50),
+                                                            active_pressed_background_color = (50, 50, 50),
+                                                            top_left_corner_radius = 15, 
+                                                            top_right_corner_radius = 15, 
+                                                            bottom_left_corner_radius = 15, 
+                                                            bottom_right_corner_radius = 15,
+                                                            min_width =  screen_w * 0.3 - 120,
+                                                            layer = 0)
 widget_dic = {
     # Bildschirm
     "room_creation_screen": room_creation_screen,
+    "room_info_screen": room_info_screen,
     # plan
     "plan": epw.Surface(plan),
     # 
-    "title": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
+    "title": epw.Label(text = "Raumeditor", font = epw.SysFont(font = "Calibri", font_size=65)),
     # status label
-    "status_title_label": epw.Label(text="Status", font=epw.SysFont(font="Calibri", font_size=40, bold = True), alignment_spacing = 0, alignment = "left"),
-    "status_label": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30),
+    "status_title_label": epw.Label(text = "Status", font=epw.SysFont(font="Calibri", font_size=40, bold = True), alignment_spacing = 0, alignment = "left"),
+    "status_label": epw.Label(text = "", font = epw.SysFont(font = "Calibri", font_size = 30),
                                                         alignment = "left",
                                                         active_unpressed_background_color = (50, 50, 50), 
                                                         active_hover_background_color = (50, 50, 50),
@@ -143,15 +202,30 @@ widget_dic = {
                                                         bottom_left_corner_radius = 15, 
                                                         bottom_right_corner_radius = 15),
     # Raumtyp
-    "room_type_label": epw.Label(text="Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_creation_screen),
-    "square_button_label": epw.Label(text="Quadratischer Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
-    "square_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = square_selected,screen = room_creation_screen),
-    "polygon_button_label": epw.Label(text="Polygon Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
-    "polygon_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = polygon_selected,screen = room_creation_screen),
-    "waypoint_button_label": epw.Label(text="Wegpunkt", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
-    "waypoint_button": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = waypoint_selected,screen = room_creation_screen),
-    "room_create_submit_button": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_submit,screen = room_creation_screen),
-    "room_create_cancel_button": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_cancel,screen = room_creation_screen),
+    "room_type_label": epw.Label(text = "Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_creation_screen),
+    "square_button_label": epw.Label(text = "Quadratischer Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
+    "square_button": epw.Button(text = "Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = square_selected,screen = room_creation_screen),
+    "polygon_button_label": epw.Label(text = "Polygon Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
+    "polygon_button": epw.Button(text = "Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = polygon_selected,screen = room_creation_screen),
+    "waypoint_button_label": epw.Label(text = "Wegpunkt", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
+    "waypoint_button": epw.Button(text = "Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = waypoint_selected,screen = room_creation_screen),
+    "room_create_submit_button": epw.Button(text = "Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_submit,screen = room_creation_screen),
+    "room_create_cancel_button": epw.Button(text = "Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_cancel,screen = room_creation_screen),
+    # Rauminfo
+    "room_info_label": epw.Label(text = "Rauminformationen", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_info_screen),
+    "room_id_label": epw.Label(text = "Raum Nr / ID", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_id_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_name_label": epw.Label(text = "Raum Name *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_name_entry": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_prof_label": epw.Label(text = "Raum Lehrer / Professor *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_prof_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_extrainfo_label": epw.Label(text = "Raum Zusatzinformationen *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_extrainfo_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_info_submit_button": epw.Button(text = "Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_info_submit, height = 57, auto_size = False, corner_radius = 15, screen = room_info_screen).config(visible = False),
+    "entry_background_label1": create_background_label(),
+    "entry_background_label2": create_background_label(),
+    "entry_background_label3": create_background_label(),
+    "entry_background_label4": create_background_label(),
     # info icon
     "info_icon": epw.Surface(info_icon)
 }
