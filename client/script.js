@@ -59,7 +59,7 @@ document.getElementById('send').addEventListener('click', () => {
                 const response = JSON.parse(xhr.responseText);
 
                 const building = response.building;
-                const location = response.location;
+                const location = encodeURI(response.location);
                 const room = response.room;
 
                 const responseHTML = `<span>Navigation zu ${building} über</span><br>`
