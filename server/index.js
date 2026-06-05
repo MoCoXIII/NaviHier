@@ -1,7 +1,11 @@
-const fs = require("fs");
 const express = require("express");
 const app = express();
 const port = 8080;
+
+// Sammeln aller Raumdaten zu einer 1:n Gebäude-Raum Zuordnung
+// aktuell fertige Zuordnung in ./rooms.json
+// später hier aus Ordnerstruktur erstellen
+const roomList = require("./rooms.json");
 
 // https://expressjs.com/en/5x/api.html#express.json
 // die Middleware erstellt den req.body Eintrag aus empfangenen JSON-Daten
@@ -23,26 +27,15 @@ app.post("/server", (req, res) => {
   let building = data.building;
   let room = data.room;
 
-  const rooms = require("./rooms.json");
-  let location = rooms[building].location;
+  let location = roomList[building].location;
 
   res.json({ building, location, room });
 
 });
 
 app.get("/rooms", (req, res) => {
-  let rooms = require("./rooms.json");
-  res.json(JSON.stringify(rooms));
+  res.json(JSON.stringify(roomList));
 });
-
-let data = null;
-
-function loadStuff()
-{
-  data = JSON.parse( fs.readFileSync("data.json") );
-}
-
-loadStuff();
 
 app.listen(port, () => {
 
