@@ -1,3 +1,4 @@
+const fs = require("fs");
 const express = require("express");
 const app = express();
 const port = 8080;
@@ -33,6 +34,15 @@ app.get("/rooms", (req, res) => {
   let rooms = require("./rooms.json");
   res.json(JSON.stringify(rooms));
 });
+
+let data = null;
+
+function loadStuff()
+{
+  data = JSON.parse( fs.readFileSync("data.json") );
+}
+
+loadStuff();
 
 app.listen(port, () => {
 

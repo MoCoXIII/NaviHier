@@ -9,6 +9,8 @@ const networkAdress = '178.130';
 const localServerHostAdress = '192.168.' + networkAdress;
 const serverURL = 'http://' + localServerHostAdress + ':8080/';
 
+// const serverURL = 'https://xrlab.hs-harz.de/navihier/api/';
+
 // sobald auf einem Server mit Domain gehostet wird, kann diese angegeben werden
 // const serverURL = 'https://backend.navihier.de/';
 
