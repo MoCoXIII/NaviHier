@@ -9,11 +9,14 @@ const networkAdress = '178.130';
 const localServerHostAdress = '192.168.' + networkAdress;
 const serverURL = 'http://' + localServerHostAdress + ':8080/';
 
-// const serverURL = 'https://xrlab.hs-harz.de/navihier/api/';
+// const serverURL = 'https://xrlab.hs-harz.de/~adler/navihier/api/';
 
 // sobald auf einem Server mit Domain gehostet wird, kann diese angegeben werden
 // const serverURL = 'https://backend.navihier.de/';
 
+const inputDiv = document.getElementById("inputs");
+const inputField = document.getElementById('input');
+const sendButton = document.getElementById('send');
 
 rooms_xhr.open('GET', serverURL + "rooms");
 rooms_xhr.onreadystatechange = function () {
@@ -35,7 +38,6 @@ rooms_xhr.onreadystatechange = function () {
                 }
             }
 
-            const sendButton = document.getElementById('send');
             sendButton.disabled = false;
         } else {
             console.error('Error:', rooms_xhr.status);
@@ -44,8 +46,29 @@ rooms_xhr.onreadystatechange = function () {
 };
 rooms_xhr.send();
 
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('room') || urlParams.get('r')) {
+    inputDiv.style.display = "none";
+    let attempts = 0;
+    function waitForRoomList() {
+        if (attempts > 10) {
+            inputDiv.style.display = "block";
+            sendButton.addEventListener('click', () => processInput(inputField.value));
+        } else if (sendButton.disabled) {
+            attempts++;
+            setTimeout(waitForRoomList, 1000);
+        } else {
+            processInput(decodeURI(urlParams.get('room') || urlParams.get('r')));
+        }
+    };
+    waitForRoomList();
+} else {
+    sendButton.addEventListener('click', () => processInput(inputField.value));
+}
 
-document.getElementById('send').addEventListener('click', () => {
+function processInput(text) {
+    inputDiv.style.display = "none";
+
     const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
     xhr.open('POST', serverURL + "server");
 
@@ -78,17 +101,18 @@ document.getElementById('send').addEventListener('click', () => {
         }
     };
 
-    let input = document.getElementById('input').value;
+    let machineText = null;
     for (let option of document.querySelectorAll('#rooms option')) {
-        if (option.textContent === input) {
-            input = option.dataset.value;  // ersetze menschlich lesefreundlichen Text durch maschinenfreundlichen Text
+        if (option.textContent === text || option.dataset.value === text) {  // option.textContent ist die menschenfreundliche Version der Raumbezeichnung mit alternativen Raumnamen
+            machineText = option.dataset.value;  // im dataset steht der maschinenfreundliche Raumbezeichner (Gebäude, Raum) mit eindeutigem Raum
+            console.log(encodeURI(machineText));
             break;
         }
     }
-    if (input === document.getElementById('input').value) {
+    if (!machineText) {
         alert("Diesen Raum gibt es nicht. Bitte wählen Sie einen der vordefinierten Räume aus.");
         return;
     }
-    let [building, room] = input.split(", ");
+    let [building, room] = machineText.split(", ");
     xhr.send(JSON.stringify({ building, room }));
-});
+}
