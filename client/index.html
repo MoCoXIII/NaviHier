@@ -13,6 +13,11 @@
             <!-- Räume aus Serverabfrage werden hier platziert -->
         </datalist>
         <button id="send" disabled>Send</button>
+        <br>
+        <button id="qr-button">QR-Code scannen</button>
+    </div>
+    <div id="qr-group" style="display: none;">
+        <video id="qr-video" autoplay></video><br>
     </div>
     <div id="output"></div>
 </body>
@@ -22,6 +27,6 @@
         color: #fff;
     }
 </style>
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </html>

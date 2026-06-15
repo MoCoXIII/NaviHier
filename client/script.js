@@ -14,16 +14,44 @@ const serverURL = 'http://' + localServerHostAdress + ':8080/';
 // sobald auf einem Server mit Domain gehostet wird, kann diese angegeben werden
 // const serverURL = 'https://backend.navihier.de/';
 
-const inputDiv = document.getElementById("inputs");
+const inputDiv = document.getElementById('inputs');
 const inputField = document.getElementById('input');
 const sendButton = document.getElementById('send');
+const qrButton = document.getElementById('qr-button');
+
+import QrScanner from "https://nimiq.github.io/qr-scanner/qr-scanner.min.js";
+const qrVideo = document.getElementById("qr-video");
+const qrGroup = document.getElementById("qr-group");
+
+function handleQRresult(result) {
+    console.log("QR Scan: ", result);
+    if (result.data) {
+        let data = result.data;
+        if (result.data.startsWith("http")) {
+            const urlParams = new URLSearchParams(result.data);
+            data = decodeURI(urlParams.get('d'));
+        } else {
+            data = decodeURI(result.data);
+        }
+        processInput(data);
+    }
+};
+
+const scanner = new QrScanner(
+    qrVideo,
+    (result) => handleQRresult(result),
+    {
+        highlightScanRegion: true,
+        highlightCodeOutline: true,
+    }
+);
 
 rooms_xhr.open('GET', serverURL + "rooms");
 rooms_xhr.onreadystatechange = function () {
     if (rooms_xhr.readyState === XMLHttpRequest.DONE) {
         if (rooms_xhr.status === 200) {  // 200 = OK
             let rooms = JSON.parse(rooms_xhr.responseText,
-                reviver = (key, value) => {
+                (key, value) => {
                     return JSON.parse(value);
                 });
 
@@ -47,27 +75,38 @@ rooms_xhr.onreadystatechange = function () {
 rooms_xhr.send();
 
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('room') || urlParams.get('r')) {
+if (urlParams.get('d')) {
     inputDiv.style.display = "none";
     let attempts = 0;
     function waitForRoomList() {
         if (attempts > 10) {
             inputDiv.style.display = "block";
-            sendButton.addEventListener('click', () => processInput(inputField.value));
+            activateInputButtons();
         } else if (sendButton.disabled) {
             attempts++;
             setTimeout(waitForRoomList, 1000);
         } else {
-            processInput(decodeURI(urlParams.get('room') || urlParams.get('r')));
+            processInput(decodeURI(urlParams.get('d')));
         }
     };
     waitForRoomList();
 } else {
+    activateInputButtons();
+}
+
+function activateInputButtons() {
     sendButton.addEventListener('click', () => processInput(inputField.value));
+    qrButton.addEventListener('click', () => {
+        inputDiv.style.display = "none";
+        qrGroup.style.display = "block";
+        scanner.start();
+    });
 }
 
 function processInput(text) {
     inputDiv.style.display = "none";
+    scanner.stop();
+    qrGroup.style.display = "none";
 
     const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
     xhr.open('POST', serverURL + "server");
@@ -110,7 +149,8 @@ function processInput(text) {
         }
     }
     if (!machineText) {
-        alert("Diesen Raum gibt es nicht. Bitte wählen Sie einen der vordefinierten Räume aus.");
+        alert(`Den Raum "${text}" gibt es in dieser Schreibweise nicht. Bitte wählen Sie einen der vordefinierten Räume aus.`);
+        inputDiv.style.display = "block";
         return;
     }
     let [building, room] = machineText.split(", ");
