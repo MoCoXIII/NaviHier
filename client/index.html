@@ -1,18 +1,25 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Server Test</title>
 </head>
+
 <body>
-    <div>
+    <div id="inputs">
         <input type="text" id="input" list="rooms">
         <datalist id="rooms">
             <!-- Räume aus Serverabfrage werden hier platziert -->
         </datalist>
         <button id="send" disabled>Send</button>
-        <div id="output"></div>
+        <br>
+        <button id="qr-button">QR-Code scannen</button>
     </div>
+    <div id="qr-group" style="display: none;">
+        <video id="qr-video" autoplay></video><br>
+    </div>
+    <div id="output"></div>
 </body>
 <style>
     body {
@@ -20,5 +27,6 @@
         color: #fff;
     }
 </style>
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
+
 </html>
