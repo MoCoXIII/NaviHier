@@ -10,6 +10,14 @@ from coordsbestimmung_Funktionen import square, circle, waypoint, polygon, plan_
 # initialisieren von Pygame
 pygame.init()
 
+# Referenzauflösung der UI
+ref_w = 2560
+ref_h = 1440
+
+# Planvariablen
+plan_start_x = 0
+plan_start_y = 0
+
 # erstellen der Positionsvariablen für den square Raum // s_x1, s_y1: erste Koordinate (obere linke Ecke); s_x2, s_y2: zweite Koordinate (untere rechte Ecke)
 s_x = 0
 s_y = 0
@@ -42,6 +50,12 @@ w_submit = False
 # erstellen der Variable zum Anzeigen der Info
 info_shown = False
 
+# 
+id_answer_list = []
+name_answer_list = []
+prof_answer_list = []
+extrainfo_answer_list = []
+
 plan_path = plan_selection()
 plan = pygame.image.load(fr"{plan_path}")
 plan_w, plan_h = plan.get_size()
@@ -56,52 +70,67 @@ pygame.event.pump()                                                             
 info_icon = pygame.image.load("assets/info_icon.png")
 
 def update_ui(widget_dic):
-    widget_dic["plan"].config(surface = plan)
-    widget_dic["plan"].place(x = 30, y = 25, mode = "%")
-    screen_info = pygame.display.Info()
-    screen_w, screen_h = screen_info.current_w, screen_info.current_h
+    global plan_start_x, plan_start_y
+    # Generelle Faktorberechnung
+    screen_w, screen_h = screen.get_size()
+    gen_faktor_w = screen_w / ref_w
+    gen_faktor_h = screen_h / ref_h
+    # Planberechnung
     max_w = screen_w * 0.40
     max_h = screen_h * 0.50
-    faktor = min(max_w / plan_w, max_h / plan_h)
-    new_w = int(plan_w * faktor)
-    new_h = int(plan_h * faktor)
-    widget_dic["plan"].scale(faktor)
+    plan_faktor = min(max_w / plan_w, max_h / plan_h)
+    new_w = int(plan_w * plan_faktor)
+    new_h = int(plan_h * plan_faktor)
+    widget_dic["plan"].config(surface = plan)
+    widget_dic["plan"].place(x = screen_w * 0.30, y = screen_h * 0.25)
+    widget_dic["plan"].scale(plan_faktor)
     plan_start_x = widget_dic["plan"].x
     plan_start_y = widget_dic["plan"].y
     # Plan und Überschrift
-    widget_dic["title"].place(x = plan_start_x + new_w // 2 - widget_dic["title"].width // 2, y = plan_start_y // 2 - widget_dic["title"].height // 2)
+    widget_dic["title"].place(x = plan_start_x + new_w // 2 - widget_dic["title"].width // 2, y = plan_start_y // 2 - widget_dic["title"].height // 2).config(font = epw.SysFont(font = "Calibri", font_size=  int(65 * gen_faktor_w)))
     # Status
-    widget_dic["status_title_label"].place(x = screen_w * 0.3, y = screen_h * 0.8)
-    widget_dic["status_label"].place(x = screen_w * 0.3, y = screen_h * 0.8 + widget_dic["status_title_label"].height)
+    widget_dic["status_title_label"].place(x = screen_w * 0.3, y = screen_h * 0.8).config(font = epw.SysFont(font = "Calibri", font_size=  int(40 * gen_faktor_w)))
+    widget_dic["status_label"].place(x = screen_w * 0.3, y = screen_h * 0.8 + widget_dic["status_title_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     widget_dic["status_label"].config(min_width = 2 * (screen_w * 0.4) // 3)
     # Raumtyp
-    widget_dic["room_type_label"].place(x = screen_w * 0.15 - widget_dic["room_type_label"].width // 2, y = screen_h * 0.25)
-    widget_dic["square_button_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["square_button_label"].height)
-    widget_dic["square_button"].place(x = 60, y = screen_h * 0.4)
-    widget_dic["polygon_button_label"].place(x = 60, y = screen_h * 0.5 - widget_dic["polygon_button_label"].height)
-    widget_dic["polygon_button"].place(x = 60, y = screen_h * 0.5)
-    widget_dic["waypoint_button_label"].place(x = 60, y = screen_h * 0.6 - widget_dic["waypoint_button_label"].height)
-    widget_dic["waypoint_button"].place(x = 60, y = screen_h * 0.6)
-    widget_dic["room_create_submit_button"].place(x = 60 + widget_dic["square_button"].width + (screen_w * 0.3 - (60 + widget_dic["square_button"].width)) // 2 - widget_dic["room_create_submit_button"].width // 2, y = screen_h * 0.4)
-    widget_dic["room_create_cancel_button"].place(x = widget_dic["room_create_submit_button"].x, y = screen_h * 0.5 - widget_dic["room_create_cancel_button"].height)
+    widget_dic["room_type_label"].place(x = screen_w * 0.15 - widget_dic["room_type_label"].width // 2, y = screen_h * 0.25).config(font = epw.SysFont(font = "Calibri", font_size=  int(40 * gen_faktor_w)))
+    widget_dic["square_button_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["square_button_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["square_button"].place(x = 60, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["polygon_button_label"].place(x = 60, y = screen_h * 0.5 - widget_dic["polygon_button_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["polygon_button"].place(x = 60, y = screen_h * 0.5).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["waypoint_button_label"].place(x = 60, y = screen_h * 0.6 - widget_dic["waypoint_button_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["waypoint_button"].place(x = 60, y = screen_h * 0.6).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_create_submit_button"].place(x = 60 + widget_dic["square_button"].width + (screen_w * 0.3 - (60 + widget_dic["square_button"].width)) // 2 - widget_dic["room_create_submit_button"].width // 2, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_create_cancel_button"].place(x = widget_dic["room_create_submit_button"].x, y = screen_h * 0.5 - widget_dic["room_create_cancel_button"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     # Rauminfo
-    widget_dic["room_info_label"].place(x = screen_w * 0.15 - widget_dic["room_info_label"].width // 2, y = screen_h * 0.25),
-    widget_dic["room_id_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["room_id_label"].height)
-    widget_dic["entry_background_label1"].place(x = 60, y = screen_h * 0.4)
-    widget_dic["room_id_entry"].place(x = 60, y = screen_h * 0.4)
-    widget_dic["room_name_label"].place(x = 60, y = screen_h * 0.5 - widget_dic["room_name_label"].height)
-    widget_dic["entry_background_label2"].place(x = 60, y = screen_h * 0.5)
-    widget_dic["room_name_entry"].place(x = 60, y = screen_h * 0.5)
-    widget_dic["room_prof_label"].place(x = 60, y = screen_h * 0.6 - widget_dic["room_prof_label"].height)
-    widget_dic["entry_background_label3"].place(x = 60, y = screen_h * 0.6)
-    widget_dic["room_prof_entry"].place(x = 60, y = screen_h * 0.6)
-    widget_dic["room_extrainfo_label"].place(x = 60, y = screen_h * 0.7 - widget_dic["room_extrainfo_label"].height)
-    widget_dic["entry_background_label4"].place(x = 60, y = screen_h * 0.7)
-    widget_dic["room_extrainfo_entry"].place(x = 60, y = screen_h * 0.7)
+    widget_dic["room_info_label"].place(x = screen_w * 0.15 - widget_dic["room_info_label"].width // 2, y = screen_h * 0.25).config(font = epw.SysFont(font = "Calibri", font_size=  int(40 * gen_faktor_w)))
+    widget_dic["room_id_label"].place(x = 60, y = screen_h * 0.4 - widget_dic["room_id_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["entry_background_label1"].place(x = 60, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_id_entry"].place(x = 60, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_name_label"].place(x = 60, y = screen_h * 0.5 - widget_dic["room_name_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["entry_background_label2"].place(x = 60, y = screen_h * 0.5).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_name_entry"].place(x = 60, y = screen_h * 0.5).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_prof_label"].place(x = 60, y = screen_h * 0.6 - widget_dic["room_prof_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["entry_background_label3"].place(x = 60, y = screen_h * 0.6).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_prof_entry"].place(x = 60, y = screen_h * 0.6).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_extrainfo_label"].place(x = 60, y = screen_h * 0.7 - widget_dic["room_extrainfo_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["entry_background_label4"].place(x = 60, y = screen_h * 0.7).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_extrainfo_entry"].place(x = 60, y = screen_h * 0.7).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_finish_submit_button"].place(x = 60, y = screen_h * 0.8 - widget_dic["room_finish_submit_button"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["room_finish_cancel_button"].place(x = 240, y = screen_h * 0.8 - widget_dic["room_finish_cancel_button"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["star_info_label"].place(x = 60, y = screen_h * 0.875 - widget_dic["star_info_label"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(20 * gen_faktor_w)))
     # Info Symbol
     widget_dic["info_icon"].scale(0.05, 0)
     widget_dic["info_icon"].place(x = screen_w - info_icon.get_width() * 0.05 - 20, y = 20)
-    return faktor
+    return plan_faktor
+
+def screenwidth_percent(value):
+    screen_w = screen.get_width()
+    return screen_w * value
+
+def screenheight_percent(value):
+    screen_h = screen.get_height()
+    return screen_h * value
 
 def square_selected():
     global shape, widget_dic
@@ -141,38 +170,68 @@ def room_info_submit_button_delay():
     widget_dic["room_info_submit_button"].config(visible = True)
 
 def room_info_submit_button_show(info_type):
-    screen_info = pygame.display.Info()
-    screen_w = screen_info.current_w
-    widget_dic["room_info_submit_button"].schedule(room_info_submit_button_delay, 1)
+    epw.schedule(room_info_submit_button_delay, 1)
+    widget_dic["room_id_entry"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["room_info_submit_button"].width)
+    widget_dic["room_name_entry"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["room_info_submit_button"].width)
+    widget_dic["room_prof_entry"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["room_info_submit_button"].width)
+    widget_dic["room_extrainfo_entry"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["room_info_submit_button"].width)
     if info_type == "id":
-        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_id_entry"].y)
+        widget_dic["room_info_submit_button"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_id_entry"].y)
     elif info_type == "name":
-        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_name_entry"].y)
+        widget_dic["room_info_submit_button"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_name_entry"].y)
     elif info_type == "prof":
-        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_prof_entry"].y)
+        widget_dic["room_info_submit_button"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_prof_entry"].y)
     elif info_type == "extra":
-        widget_dic["room_info_submit_button"].place(x = screen_w * 0.3 - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_extrainfo_entry"].y)
+        widget_dic["room_info_submit_button"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["room_info_submit_button"].width, y = widget_dic["room_extrainfo_entry"].y)
 
 def room_info_submit_button_hide():
-    widget_dic["room_info_submit_button"].config(visible = False)
+    pos = pygame.mouse.get_pos()
+    if pos[0] >= widget_dic["room_info_submit_button"].x and pos[0] <= widget_dic["room_info_submit_button"].x + widget_dic["room_info_submit_button"].width and pos[1] >= widget_dic["room_info_submit_button"].y and pos[1] <= widget_dic["room_info_submit_button"].y + widget_dic["room_info_submit_button"].height:
+        pass
+    else:
+        widget_dic["room_info_submit_button"].config(visible = False)
+        widget_dic["room_id_entry"].config(width = screenwidth_percent(0.3) - 120)
+        widget_dic["room_name_entry"].config(width = screenwidth_percent(0.3) - 120)
+        widget_dic["room_prof_entry"].config(width = screenwidth_percent(0.3) - 120)
+        widget_dic["room_extrainfo_entry"].config(width = screenwidth_percent(0.3) - 120)
 
 def room_info_submit():
-    screen_info = pygame.display.Info()
-    screen_w, screen_h = screen_info.current_w, screen_info.current_h
-    if widget_dic["room_info_submit_button"].y == screen_h * 0.4:
-        print("Platzhalter")
-    elif widget_dic["room_info_submit_button"].y == screen_h * 0.5:
-        print("Platzhalter")
-    elif widget_dic["room_info_submit_button"].y == screen_h * 0.6:
-        print("Platzhalter")
-    elif widget_dic["room_info_submit_button"].y == screen_h * 0.7:
-        print("Platzhalter")
+    global id_answer_list, name_answer_list, prof_answer_list, extra_answer_list
+    if widget_dic["room_info_submit_button"].y == screenheight_percent(0.4):
+        id_answer_list.clear()
+        id_answer_list.append(widget_dic["room_id_entry"].get())
+        widget_dic["room_id_entry"].config(text = "")
+    elif widget_dic["room_info_submit_button"].y == screenheight_percent(0.5):
+        name_answer_list.append(widget_dic["room_name_entry"].get())
+        widget_dic["room_name_entry"].config(text = "")
+    elif widget_dic["room_info_submit_button"].y == screenheight_percent(0.6):
+        prof_answer_list.append(widget_dic["room_prof_entry"].get())
+        widget_dic["room_prof_entry"].config(text = "")
+    elif widget_dic["room_info_submit_button"].y == screenheight_percent(0.7):
+        extrainfo_answer_list.append(widget_dic["room_extrainfo_entry"].get())
+        widget_dic["room_extrainfo_entry"].config(text = "")
+    widget_dic["room_info_submit_button"].config(visible = False)
+
+def room_create_finish_submit():
+    print(id_answer_list, name_answer_list, prof_answer_list, extrainfo_answer_list)
+
+def room_create_finish_cancel():
+    id_answer_list.clear()
+    name_answer_list.clear()
+    prof_answer_list.clear()
+    extrainfo_answer_list.clear()
+    room_create_cancel()
+    widget_dic["room_id_entry"].config(text = "")
+    widget_dic["room_name_entry"].config(text = "")
+    widget_dic["room_prof_entry"].config(text = "")
+    widget_dic["room_extrainfo_entry"].config(text = "")
+    widget_dic["room_info_screen"].hide()
+    widget_dic["room_creation_screen"].show()
+    widget_dic["status_label"].config(text = "Zurücksetzen der Raumerstellung")
 
 room_creation_screen = epw.Screen(visible = True)
 room_info_screen = epw.Screen(visible = False)
 def create_background_label():
-    screen_info = pygame.display.Info()
-    screen_w = screen_info.current_w
     return epw.Label(text = "", screen = room_info_screen, active_unpressed_background_color = (50, 50, 50), 
                                                             active_hover_background_color = (50, 50, 50),
                                                             active_pressed_background_color = (50, 50, 50),
@@ -180,8 +239,9 @@ def create_background_label():
                                                             top_right_corner_radius = 15, 
                                                             bottom_left_corner_radius = 15, 
                                                             bottom_right_corner_radius = 15,
-                                                            min_width =  screen_w * 0.3 - 120,
+                                                            min_width =  screenwidth_percent(0.3) - 120,
                                                             layer = 0)
+
 widget_dic = {
     # Bildschirm
     "room_creation_screen": room_creation_screen,
@@ -202,7 +262,7 @@ widget_dic = {
                                                         bottom_left_corner_radius = 15, 
                                                         bottom_right_corner_radius = 15),
     # Raumtyp
-    "room_type_label": epw.Label(text = "Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_creation_screen),
+    "room_type_label": epw.Label(text = "Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold = True), screen = room_creation_screen),
     "square_button_label": epw.Label(text = "Quadratischer Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
     "square_button": epw.Button(text = "Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command = square_selected,screen = room_creation_screen),
     "polygon_button_label": epw.Label(text = "Polygon Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left",screen = room_creation_screen),
@@ -213,22 +273,26 @@ widget_dic = {
     "room_create_cancel_button": epw.Button(text = "Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_cancel,screen = room_creation_screen),
     # Rauminfo
     "room_info_label": epw.Label(text = "Rauminformationen", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_info_screen),
-    "room_id_label": epw.Label(text = "Raum Nr / ID", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "room_id_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
-    "room_name_label": epw.Label(text = "Raum Name *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "room_name_entry": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
-    "room_prof_label": epw.Label(text = "Raum Lehrer / Professor *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "room_prof_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
-    "room_extrainfo_label": epw.Label(text = "Raum Zusatzinformationen *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "room_extrainfo_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
-    "room_info_submit_button": epw.Button(text = "Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_info_submit, height = 57, auto_size = False, corner_radius = 15, screen = room_info_screen).config(visible = False),
+    "room_id_label": epw.Label(text = "Raum Nr / ID *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_id_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_name_label": epw.Label(text = "Raum Name **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_name_entry": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120,screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_prof_label": epw.Label(text = "Raum Lehrer / Professor **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_prof_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_extrainfo_label": epw.Label(text = "Raum Zusatzinformationen **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
+    "room_extrainfo_entry": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "room_info_submit_button": epw.Button(text = "Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_info_submit, height = 57, auto_size = False, corner_radius = 15, visible = False, screen = room_info_screen),
     "entry_background_label1": create_background_label(),
     "entry_background_label2": create_background_label(),
     "entry_background_label3": create_background_label(),
     "entry_background_label4": create_background_label(),
+    "room_finish_submit_button": epw.Button(text = "Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_finish_submit, screen = room_info_screen),
+    "room_finish_cancel_button": epw.Button(text = "Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command = room_create_finish_cancel, screen = room_info_screen),
+    "star_info_label": epw.Label(text = "*   max. eine Angabe\n** optionale Angabe", font=epw.SysFont(font="Calibri", font_size=20), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
     # info icon
     "info_icon": epw.Surface(info_icon)
 }
+
 
 update_ui(widget_dic)
 running = True
@@ -245,12 +309,16 @@ while running:
         widget_dic["room_create_cancel_button"].config(state = "disabled")
     else:
         widget_dic["room_create_cancel_button"].config(state = "enabled")
+    
+    if id_answer_list == []:
+        widget_dic["room_finish_submit_button"].config(state = "disabled")
+    else:
+        widget_dic["room_finish_submit_button"].config(state = "enabled")
 
     for event in pygame.event.get():
         if event.type == pygame.VIDEORESIZE:
+            screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
             scale = update_ui(widget_dic)
-            plan_start_x = widget_dic["plan"].x
-            plan_start_y = widget_dic["plan"].y
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if shape == 1:
