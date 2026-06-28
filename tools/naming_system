@@ -1,0 +1,22 @@
+Dictionary-Key
+    Beispiel: 2_0_label_title
+
+    1. Zahl: Menü / Auswahl auf der das Widget sich befindet
+        0 = Serverauswahl
+        1 = Gebäudemenu
+        2 = Etagenmenu
+        3 = Etagen - / Raumplaneditor
+    
+    2. Zahl: Arbeitschritt in dem Menu
+        0 = 1. Arbeitsschritt
+        1 = 2. Arbeitsschritt
+        ...
+        Falls es mehrere Arbeitschritte gibt, in denen das Widget vorkommt, werden die Zahlen hintereinander geschrieben
+        Beispiel: 3_24_label_title
+
+    4. Text: Art des Widgets
+
+    5. Text: Stichwort zur Beschreibung der ungefähren Funktion
+
+    Falls eine Zahl nicht relevant ist wird "ND" (not defined) anstelle angegeben
+        Beispiel: 1_2_ND_screen_background
