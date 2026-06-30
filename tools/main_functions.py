@@ -95,7 +95,7 @@ def square (s_x1, s_y1, s_x2, s_y2, plan_path, scale):
                 add_room(data, plan_path)
 
                 list_data = {
-                        "name": f"{data["names"][0]}",
+                        "name": f"{data['names'][0]}",
                         "path": fr"{str(json_path_floor(plan_path))}",
                         "rooms_list": f"{rooms_list_pos(plan_path)}"
                 }
@@ -123,7 +123,7 @@ def circle (c_x, c_y, radiuspos_x, radiuspos_y, plan_path, scale):
                 add_room(data, plan_path)
 
                 list_data = {
-                        "name": f"{data["names"][0]}",
+                        "name": f"{data['names'][0]}",
                         "path": fr"{str(json_path_floor(plan_path))}",
                         "rooms_list": f"{rooms_list_pos(plan_path)}"
                 }
@@ -167,7 +167,7 @@ def polygon (p_coords, plan_path):
                 add_room(data, plan_path)  
 
                 list_data = {
-                        "name": f"{data["names"][0]}",
+                        "name": f"{data['names'][0]}",
                         "path": fr"{str(json_path_floor(plan_path))}",
                         "rooms_list": fr"{str(rooms_list_pos(plan_path))}"
                 }
