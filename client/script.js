@@ -5,11 +5,11 @@ const rooms_xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/
 // wird die IP-Adresse des Backend-Hosts angegeben.
 // Da sich diese als dynamische IP-Adresse ändern kann, soll sie bei Bedarf geändert werden können
 // const networkAdress = prompt("Geben Sie die IP-Adresse des Host-Geräts im Netzwerk ein: (192.168.___.___)", _default='178.130');
-const networkAdress = '178.130';
-const localServerHostAdress = '192.168.' + networkAdress;
-const serverURL = 'http://' + localServerHostAdress + ':8080/';
+// const networkAdress = '178.130';
+// const localServerHostAdress = '192.168.' + networkAdress;
+// const serverURL = 'http://' + localServerHostAdress + ':8080/';
 
-// const serverURL = 'https://xrlab.hs-harz.de/~adler/navihier/api/';
+const serverURL = 'https://xrlab.hs-harz.de/~adler/navihier/api/';
 
 // sobald auf einem Server mit Domain gehostet wird, kann diese angegeben werden
 // const serverURL = 'https://backend.navihier.de/';
