@@ -5,7 +5,7 @@
 import pygame
 import easypygamewidgets as epw
 import ctypes
-from main_functions import square, circle, waypoint, polygon, plan_selection, text_display, question_display
+from main_functions import plan_selection, save_data
 
 # initialisieren von Pygame
 pygame.init()
@@ -96,7 +96,8 @@ def waypoint_selected():
         widget_dic["4_01_label_statuscontent"].config(text = "Waypoint Ausgewählt")
     
 def room_create_finish_submit():
-    print(id_answer_list, name_answer_list, prof_answer_list, extrainfo_answer_list)
+    #add_json()
+    save_data(plan_path, shape, id_answer_list, name_answer_list, prof_answer_list, extrainfo_answer_list)
 
 def room_create_submit():
     widget_dic["4_0_screen_group"].hide()
@@ -145,20 +146,20 @@ def room_create_finish_cancel():
     widget_dic["4_0_screen_group"].show()
     widget_dic["4_01_label_statuscontent"].config(text = "Zurücksetzen der Raumerstellung")
 
-def room_info_submit_button_show(info_type):
-    epw.schedule(room_info_submit_button_delay, 1)
-    widget_dic["4_1_entry_id"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["4_1_button_infosub"].width)
-    widget_dic["4_1_entry_name"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["4_1_button_infosub"].width)
-    widget_dic["4_1_entry_prof"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["4_1_button_infosub"].width)
+def show_4_1_button_infosub(info_type):
+    epw.schedule(delay_4_1_button_infosub, 1)
+    widget_dic["4_1_entry_id"].config(width = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w))
+    widget_dic["4_1_entry_name"].config(width = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w))
+    widget_dic["4_1_entry_prof"].config(width = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w))
     widget_dic["4_1_entry_extrainfo"].config(width = screenwidth_percent(0.3) - 120 - widget_dic["4_1_button_infosub"].width)
     if info_type == "id":
-        widget_dic["4_1_button_infosub"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width, y = widget_dic["4_1_entry_id"].y)
+        widget_dic["4_1_button_infosub"].place(x = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w), y = widget_dic["4_1_entry_id"].y)
     elif info_type == "name":
-        widget_dic["4_1_button_infosub"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width, y = widget_dic["4_1_entry_name"].y)
+        widget_dic["4_1_button_infosub"].place(x = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w), y = widget_dic["4_1_entry_name"].y)
     elif info_type == "prof":
-        widget_dic["4_1_button_infosub"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width, y = widget_dic["4_1_entry_prof"].y)
+        widget_dic["4_1_button_infosub"].place(x = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w), y = widget_dic["4_1_entry_prof"].y)
     elif info_type == "extra":
-        widget_dic["4_1_button_infosub"].place(x = screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width, y = widget_dic["4_1_entry_extrainfo"].y)
+        widget_dic["4_1_button_infosub"].place(x = int((screenwidth_percent(0.3) - 60 - widget_dic["4_1_button_infosub"].width) * gen_faktor_w), y = widget_dic["4_1_entry_extrainfo"].y)
 
 def room_info_submit_button_hide():
     pos = pygame.mouse.get_pos()
@@ -171,11 +172,11 @@ def room_info_submit_button_hide():
         widget_dic["4_1_entry_prof"].config(width = screenwidth_percent(0.3) - 120)
         widget_dic["4_1_entry_extrainfo"].config(width = screenwidth_percent(0.3) - 120)
 
-def room_info_submit_button_delay():
+def delay_4_1_button_infosub():
     widget_dic["4_1_button_infosub"].config(visible = True)
 
 def update_ui(widget_dic):
-    global plan_start_x, plan_start_y
+    global gen_faktor_w, gen_faktor_h, plan_start_x, plan_start_y
     # Generelle Faktorberechnung
     screen_w, screen_h = screen.get_size()
     gen_faktor_w = screen_w / ref_w
@@ -209,18 +210,19 @@ def update_ui(widget_dic):
     widget_dic["4_0_button_createsub"].place(x = 60 + widget_dic["4_0_button_squaretype"].width + (screen_w * 0.3 - (60 + widget_dic["4_0_button_squaretype"].width)) // 2 - widget_dic["4_0_button_createsub"].width // 2, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     widget_dic["4_0_button_createcan"].place(x = widget_dic["4_0_button_createsub"].x, y = screen_h * 0.5 - widget_dic["4_0_button_createcan"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     # Rauminfo
+    widget_dic["4_1_button_infosub"].config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     widget_dic["4_1_label_infotitle"].place(x = screen_w * 0.15 - widget_dic["4_1_label_infotitle"].width // 2, y = screen_h * 0.25).config(font = epw.SysFont(font = "Calibri", font_size=  int(40 * gen_faktor_w)))
     widget_dic["4_1_label_id"].place(x = 60, y = screen_h * 0.4 - widget_dic["4_1_label_id"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     widget_dic["4_1_label_entrybackgr1"].place(x = 60, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), min_width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_entry_id"].place(x = 60, y = screen_h * 0.4).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), height = int(57 * gen_faktor_h), width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_label_name"].place(x = 60, y = screen_h * 0.5 - widget_dic["4_1_label_name"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr2"].place(x = 60, y = screen_h * 0.5).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["4_1_label_entrybackgr2"].place(x = 60, y = screen_h * 0.5).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), min_width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_entry_name"].place(x = 60, y = screen_h * 0.5).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), height = int(57 * gen_faktor_h), width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_label_prof"].place(x = 60, y = screen_h * 0.6 - widget_dic["4_1_label_prof"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr3"].place(x = 60, y = screen_h * 0.6).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["4_1_label_entrybackgr3"].place(x = 60, y = screen_h * 0.6).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), min_width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_entry_prof"].place(x = 60, y = screen_h * 0.6).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), height = int(57 * gen_faktor_h), width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_label_extrainfo"].place(x = 60, y = screen_h * 0.7 - widget_dic["4_1_label_extrainfo"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr4"].place(x = 60, y = screen_h * 0.7).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
+    widget_dic["4_1_label_entrybackgr4"].place(x = 60, y = screen_h * 0.7).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), min_width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_entry_extrainfo"].place(x = 60, y = screen_h * 0.7).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)), height = int(57 * gen_faktor_h), width = int((screenwidth_percent(0.3) - 120) * gen_faktor_w))
     widget_dic["4_1_button_finishsub"].place(x = 60, y = screen_h * 0.8 - widget_dic["4_1_button_finishsub"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
     widget_dic["4_1_button_finishcan"].place(x = 240, y = screen_h * 0.8 - widget_dic["4_1_button_finishcan"].height).config(font = epw.SysFont(font = "Calibri", font_size=  int(30 * gen_faktor_w)))
@@ -275,13 +277,13 @@ widget_dic = {
     # Rauminfo
     "4_1_label_infotitle": epw.Label(text = "Rauminformationen", font=epw.SysFont(font="Calibri", font_size=40, bold = True),screen = room_info_screen),
     "4_1_label_id": epw.Label(text = "Raum Nr / ID *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "4_1_entry_id": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "4_1_entry_id": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:show_4_1_button_infosub("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
     "4_1_label_name": epw.Label(text = "Raum Name **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "4_1_entry_name": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120,screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "4_1_entry_name": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120,screen = room_info_screen).bind("<FOCUS-IN>", lambda:show_4_1_button_infosub("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
     "4_1_label_prof": epw.Label(text = "Raum Lehrer / Professor **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "4_1_entry_prof": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "4_1_entry_prof": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:show_4_1_button_infosub("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
     "4_1_label_extrainfo": epw.Label(text = "Raum Zusatzinformationen **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing = 0, alignment = "left", screen = room_info_screen),
-    "4_1_entry_extrainfo": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:room_info_submit_button_show("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+    "4_1_entry_extrainfo": epw.Entry(font = epw.SysFont(font="Calibri", font_size=30), height = 57, hide_background = True, hide_border = True, auto_size = False, width =  screenwidth_percent(0.3) - 120, screen = room_info_screen).bind("<FOCUS-IN>", lambda:show_4_1_button_infosub("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
     "4_1_button_infosub": epw.Button(text = "Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command = room_info_submit, height = 57, auto_size = False, corner_radius = 15, visible = False, screen = room_info_screen),
     "4_1_label_entrybackgr1": create_background_label(),
     "4_1_label_entrybackgr2": create_background_label(),

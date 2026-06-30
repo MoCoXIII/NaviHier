@@ -1,0 +1,11 @@
+{
+    "images": {
+        "png": "plans/s-gebäude_1_og.png",
+        "svg": "plans/s-gebäude_1_og.svg"
+    },
+    "rooms": [
+        {}
+    ],
+    "waypoints": [],
+    "connections": []
+}
