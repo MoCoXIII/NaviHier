@@ -2,6 +2,10 @@ const express = require("express");
 const app = express();
 const port = 8080;
 
+// Serving der Client-Seite über den Server
+// wird direkt unter "/" geladen, also später nicht versuchen, noch etwas auf app.get("/", ...) anzubieten
+app.use(express.static('client'));
+
 // Sammeln aller Raumdaten zu einer 1:n Gebäude-Raum Zuordnung
 // aktuell fertige Zuordnung in ./rooms.json
 // später hier aus Ordnerstruktur erstellen

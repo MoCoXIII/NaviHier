@@ -1,18 +1,10 @@
 // Raumliste zur lokalen Suche vom Server abfragen
 const rooms_xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
 
-// Damit die Anwendung auch auf anderen Geräten im lokalen Netzwerk funktioniert,
-// wird die IP-Adresse des Backend-Hosts angegeben.
-// Da sich diese als dynamische IP-Adresse ändern kann, soll sie bei Bedarf geändert werden können
-// const networkAdress = prompt("Geben Sie die IP-Adresse des Host-Geräts im Netzwerk ein: (192.168.___.___)", _default='178.130');
-// const networkAdress = '178.130';
-// const localServerHostAdress = '192.168.' + networkAdress;
-// const serverURL = 'http://' + localServerHostAdress + ':8080/';
-
-const serverURL = 'https://xrlab.hs-harz.de/~adler/navihier/api/';
-
-// sobald auf einem Server mit Domain gehostet wird, kann diese angegeben werden
-// const serverURL = 'https://backend.navihier.de/';
+// Update 11.7.2026:
+// Server URL muss nicht länger hard-coded sein, da nun der Server auch den Client auf der gleichen URL bereitstellt
+// (also können wir die URL dieser Seite einfach weiter nutzen)
+const serverURL = window.location.origin + "/";
 
 const inputDiv = document.getElementById('inputs');
 const inputField = document.getElementById('input');
