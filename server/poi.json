@@ -1,0 +1,20 @@
+{
+    "Stadtfeld": {
+        "poi": {
+            "EW": ["Eingang West", "Parkplatz Sporthalle"],
+            "EO": ["Eingang Ost", "Seniorenheim"],
+            "S101": ["S101", "Deutsch 1"],
+            "S301": ["S301", "Mathe 1", "Mathematik 1"]
+        },
+        "location": "Ernst Pörner Straße 15, 38855 Wernigerode"
+    },
+    "Westerntor": {
+        "poi": {
+            "EF": ["Fronteingang", "Große Tür"],
+            "EH": ["Hintereingang", "Kleine Tür", "Parkplatz"],
+            "W13": ["W13"],
+            "W8": ["W8"]
+        },
+        "location": "Westernstraße 1, 38855 Wernigerode"
+    }
+}

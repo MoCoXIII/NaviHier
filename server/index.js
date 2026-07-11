@@ -6,10 +6,10 @@ const port = 8080;
 // wird direkt unter "/" geladen, also später nicht versuchen, noch etwas auf app.get("/", ...) anzubieten
 app.use(express.static('client'));
 
-// Sammeln aller Raumdaten zu einer 1:n Gebäude-Raum Zuordnung
-// aktuell fertige Zuordnung in ./rooms.json
+// Sammeln aller Points Of Interest (POI) zu einer 1:n Gebäude-POI Zuordnung
+// aktuell beispielhafte Zuordnung in ./poi.json
 // später hier aus Ordnerstruktur erstellen
-const roomList = require("./rooms.json");
+const poi = require("./poi.json");
 
 // https://expressjs.com/en/5x/api.html#express.json
 // die Middleware erstellt den req.body Eintrag aus empfangenen JSON-Daten
@@ -31,14 +31,14 @@ app.post("/server", (req, res) => {
   let building = data.building;
   let room = data.room;
 
-  let location = roomList[building].location;
+  let location = poi[building].location;
 
   res.json({ building, location, room });
 
 });
 
-app.get("/rooms", (req, res) => {
-  res.json(JSON.stringify(roomList));
+app.get("/poi", (req, res) => {
+  res.json(JSON.stringify(poi));
 });
 
 app.listen(port, () => {

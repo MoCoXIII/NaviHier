@@ -130,7 +130,7 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
 
 // document.body.appendChild(inputDiv);
 
-// xhr.open('GET', serverURL + "rooms");
+// xhr.open('GET', serverURL + "poi");
 // xhr.onreadystatechange = function () {
 //     if (xhr.readyState === XMLHttpRequest.DONE) {
 //         if (xhr.status === 200) {  // 200 = OK
