@@ -88,9 +88,91 @@ function handleQRScan(resolve, reject) {
     scanner.start();
 };
 
+function setStartManually(resolve, reject) {
+    const getPOIPromise = new Promise((resolve, reject) => {
+        getPOI("Bitte wähle den Startort aus.", resolve, reject);
+    });
+
+    getPOIPromise.then((startResult) => {
+        start = startResult;
+        resolve();
+    });
+};
+
+function setDestinationManually(resolve, reject) {
+    const getPOIPromise = new Promise((resolve, reject) => {
+        getPOI("Bitte wähle den Zielort aus.", resolve, reject);
+    });
+
+    getPOIPromise.then((destinationResult) => {
+        destination = destinationResult;
+        resolve();
+    });
+};
+
+let poiCache = null;
+function getPOI(userMessage, resolve, reject) {
+    const poiPromise = new Promise((resolve, reject) => {
+        if (!poiCache) {
+            const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
+            xhr.open('GET', serverURL + "poi");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {  // 200 = OK
+                        poiCache = JSON.parse(xhr.responseText,
+                            (key, value) => {
+                                return JSON.parse(value);
+                            });
+                        resolve();
+                    } else {
+                        console.error('Error:', xhr.status);
+                        reject();
+                    }
+                }
+            };
+            xhr.send();
+        } else {  // poi wurden bereits geladen
+            resolve();
+        };
+    });
+
+    poiPromise.then(() => {
+        const selectElement = document.createElement("select");
+        document.body.appendChild(selectElement);
+
+        let compiledChoices = [];
+        for (let building of Object.keys(poiCache)) {
+            let location = poiCache[building].location;
+            for (let [id, names] of Object.entries(poiCache[building].poi)) {
+                let value = building + ", " + id;
+                let label = names.join(" / ") + " (" + building + ")";
+                compiledChoices.push({ value: value, label: label });
+            }
+        }
+    
+        const selector = new Choices(selectElement, {
+            placeholderValue: userMessage,
+            choices: compiledChoices
+        });
+
+        selectElement.addEventListener(
+            'choice',
+            function (event) {
+                selector.destroy();
+                selectElement.remove();
+                resolve(event.detail.value);
+            },
+            false
+        );
+    });
+};
+
+
+
 let path = null;
 pathSetter.then(() => {  // start und destination erfolgreich festgelegt
-    console.log(start, destination);
+    console.log(start);
+    console.log(destination);
     setPath();
 });
 
@@ -99,101 +181,11 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
 // code hiernach als Kommentar betrachten
 // arbeitet sozusagen als "Archiv" bis hier drüber eine bessere Version zustande kommt
 
-// // Raumliste zur lokalen Suche vom Server abfragen
-// const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
-
-// const previousInputDiv = document.getElementById('inputs');
-// if (previousInputDiv) {
-//     previousInputDiv.remove();
-// }
-// // Sammlung aller Input-Elemente dieser Anfrage
-// const inputDiv = document.createElement('div');
-// inputDiv.id = 'inputs';
-
-// // Manuelle Inputs
-// const manualInputs = document.createElement('div');
-// manualInputs.id = 'manual-inputs';
-// const inputField = document.createElement('input');
-// inputField.type = 'text';
-// inputField.id = 'input';
-// inputField.setAttribute('list', 'rooms');
-// const datalist = document.createElement('datalist');
-// datalist.id = 'rooms';
-// manualInputs.appendChild(inputField);
-// manualInputs.appendChild(datalist);
-// const sendButton = document.createElement('button');
-// sendButton.id = 'send';
-// sendButton.textContent = 'Senden';
-// manualInputs.appendChild(sendButton);
-// inputDiv.appendChild(manualInputs);
-
-
-// document.body.appendChild(inputDiv);
-
-// xhr.open('GET', serverURL + "poi");
-// xhr.onreadystatechange = function () {
-//     if (xhr.readyState === XMLHttpRequest.DONE) {
-//         if (xhr.status === 200) {  // 200 = OK
-//             let rooms = JSON.parse(xhr.responseText,
-//                 (key, value) => {
-//                     return JSON.parse(value);
-//                 });
-
-//             const roomsList = document.getElementById('rooms');
-//             for (let building of Object.keys(rooms)) {
-//                 let location = rooms[building].location;
-//                 for (let room of rooms[building].rooms) {
-//                     const option = document.createElement('option');
-//                     option.dataset.value = building + ", " + room[0];
-//                     option.textContent = room.join(" / ") + " (" + building + ")";
-//                     roomsList.appendChild(option);
-//                 }
-//             }
-//         } else {
-//             console.error('Error:', xhr.status);
-//         }
-//     }
-// };
-// xhr.send();
-
-// if (urlParams.get('d')) {
-//     inputDiv.style.display = "none";
-//     let attempts = 0;
-//     function waitForRoomList() {
-//         if (attempts > 10) {
-//             inputDiv.style.display = "block";
-//             activateInputButtons();
-//         } else if (sendButton.disabled) {
-//             attempts++;
-//             setTimeout(waitForRoomList, 1000);
-//         } else {
-//             processInput(decodeURI(urlParams.get('d')));
-//         }
-//     };
-//     waitForRoomList();
-// } else {
-//     activateInputButtons();
-// }
-
-// function activateInputButtons() {
-//     sendButton.addEventListener('click', () => processInput(inputField.value));
-//     qrButton.addEventListener('click', () => {
-//         manualInputs.style.display = "none";
-//         qrButton.style.display = "none";
-//         qrVideoGroup.style.display = "block";
-//         scanner.start();
-//     });
-// }
-
-// function processInput(text) {
-//     inputDiv.style.display = "none";
-//     scanner.stop();
-
-//     const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
 //     xhr.open('POST', serverURL + "server");
 
 //     // mime type application/json bedeutet, dass im Server express.json() die JSON Nachricht als solche erkennen kann
 //     // siehe https://expressjs.com/en/5x/api.html#express.json
+//     // benötigt, damit die POST Anfrage Daten senden kann
 //     xhr.setRequestHeader('Content-Type', 'application/json');
 
 //     xhr.onreadystatechange = function () {
