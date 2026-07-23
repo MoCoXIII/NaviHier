@@ -1,16 +1,7 @@
-import customtkinter
 import json
 from pathlib import Path
 
-def plan_selection():
-        print("Wähle den Gebäudeplan aus")
-        try: 
-            plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("All", "*.png;*.jpg;*.jpeg;*.webp"), ("PNG Datei", "*.png"), ("JPG Datei", "*.jpg"), ("JPEG Datei", "*.jpeg"), ("WEBP Datei", "*.webp")], initialdir=r"Gymnasium_Wernigerode")
-            if plan_path == "": 
-                raise FileNotFoundError
-            return plan_path
-        except FileNotFoundError: 
-            exit(0)
+
 
 def json_path(plan_path):
     path_objekt = Path(plan_path)
@@ -33,7 +24,7 @@ def add_json(data, plan_path):
 def save_data(plan_path,shape, nr, name, prof, exrainf):
     if shape == 1 or shape == 2:
         data = {
-            "nr": nr,
+            "nr": str(nr[0]),
             "name": name,
             "prof": prof,
             "exrainf": exrainf
