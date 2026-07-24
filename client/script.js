@@ -2,6 +2,11 @@ import QrScanner from "https://nimiq.github.io/qr-scanner/qr-scanner.min.js";
 
 const serverURL = window.location.origin + "/";
 
+// Wenn mehrere Einrichtungen auf dem Server gehostet werden, muss die Zieleinrichtung festgelegt werden
+// Für Entwicklungszwecke bisher nur eine Einrichtung pro Server
+// (Server sendet automatisch nur Daten zu seiner einzigen Einrichtung)
+const facility = "";
+
 let start = null;
 let destination = null;
 
@@ -115,7 +120,7 @@ function getPOI(userMessage, resolve, reject) {
     const poiPromise = new Promise((resolve, reject) => {
         if (!poiCache) {
             const xhr = new XMLHttpRequest();  // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest
-            xhr.open('GET', serverURL + "poi");
+            xhr.open('GET', serverURL + "poi/" + facility);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (xhr.status === 200) {  // 200 = OK
