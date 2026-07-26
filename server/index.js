@@ -100,13 +100,25 @@ app.post("/server", (req, res) => {
 
 });
 
-app.get("/poi/{:facility}", (req, res) => {
+app.get("/poi/{:facility{/:verification}}", (req, res) => {
   const facility = req.params.facility;
+
+  // parameter "verification" dient momentan als Notiz:
+  // falls in Zukunft der Zugriff auf die Daten einer Einrichtung verifiziert werden soll,
+  // könnte ein solcher Parameter genutzt werden (derzeit ungenutzt)
+  const verification = req.params.verification;
+
   const facilityNameList = Object.keys(facilities);
   if (facilityNameList.length === 1) {
     res.json(JSON.stringify(facilities[facilityNameList[0]].poi));
   } else if (facility) {
-    res.json(JSON.stringify(facilities[facility].poi));
+    if (facilities[facility]) {
+      res.json(JSON.stringify(facilities[facility].poi));
+    } else {
+      res.status(404).send(`Facility ${facility} not found. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
+    }
+  } else {
+    res.status(400).send(`Expected facility identifier. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
   }
 });
 
