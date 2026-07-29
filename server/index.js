@@ -27,15 +27,17 @@ for (const facility in ro_facilities) {
   const ro_locations = require(pathToFacilities + facilityPath.join(""));
   const pathToFacility = "../facilities/" + facilityPath[0];
 
-  let locations = {};
-  facilities[facility] = locations; // speichere die Liste der Standorte dieser Einrichtung
+  let facilityContent = {};
+  facilities[facility] = facilityContent; // speichere die Liste der Standorte dieser Einrichtung
   let facility_poi = {};
-  locations["poi"] = facility_poi; // initialisiere Points Of Interest Zusammenfassung für diese Einrichtung
+  facilityContent["poi"] = facility_poi; // initialisiere Points Of Interest Zusammenfassung für diese Einrichtung
+
+  facilityContent.locations = {};
 
   for (const locationShortName in ro_locations) {
     const ro_locationdata = ro_locations[locationShortName];
     let locationdata = ro_locationdata;
-    locations[locationShortName] = locationdata;
+    facilityContent.locations[locationShortName] = locationdata;
 
     let location_poi = { poi: {} };
     location_poi.location = ro_locationdata.location;
