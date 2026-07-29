@@ -83,6 +83,8 @@ class Waypoint {
     this.connections = connections;
     this.map = map;
     this.pathToHere = [];
+    this.distanceToHere = undefined;
+    this.isExit = false;
   }
 }
 for (let [facilityName, facilityData] of Object.entries(facilities)) {
@@ -150,30 +152,144 @@ app.get("/poi/{:facility{/:verification}}", (req, res) => {
   }
 });
 
-app.get("/path/:start/:destination{/:facility}", (req, res) => {
-  const start = decodeURIComponent(req.params.start);
-  const destination = decodeURIComponent(req.params.destination);
-  let facility = decodeURIComponent(req.params.facility);
+app.get("/path/:start/:destination/{:facility}", (req, res) => {
+  const URIstart = decodeURIComponent(req.params.start);
+  const URIdestination = decodeURIComponent(req.params.destination);
+  let facilityName = decodeURIComponent(req.params.facility);
 
   if (facilityNameList.length === 1) {
-    facility = facilityNameList[0];
+    facilityName = facilityNameList[0];
   };
-  if (!facility) {
+  if (!facilityName) {
     res.status(400).send(`Expected facility identifier. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
-  } else if (!facilities[facility]) {
-    res.status(404).send(`Facility ${facility} not found. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
+  } else if (!facilities[facilityName]) {
+    res.status(404).send(`Facility ${facilityName} not found. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
   };
 
-  if (!start || !destination) {
+  if (!URIstart || !URIdestination) {
     res.status(400).send("Expected start and destination");
   };
 
-  const [startLocation, startPOI] = start.split(", ");
-  const [destLocation, destPOI] = destination.split(", ");
+  const [startLocation, startPOI] = URIstart.split(", ");
+  const [destLocation, destPOI] = URIdestination.split(", ");
 
   let finalPath = [];
 
-  // berechne Weg hier
+  // findPathInLocation findet den kürzesten Weg zwischen zwei POI
+  // Eingaben:
+  // - start: Information über den Punkt, von dem aus begonnen wird
+  // - destination: Information über einen Punkt, zu dem der Weg gefunden werden soll
+  // - location (Object): der Standort, der alle nötigen Wegpunkte, ihre Verbindungen und Attribute enthält
+  function findPathInLocation(start, destination, location, requirements={}) {
+
+    // zuerst sicherstellen, dass alle Wegpunkte in ihren Attributen zur Wegfindung unspezialisiert sind
+    for (const waypoint of Object.values(location.waypoints)) {
+      // diese beiden Werte sind vom Startpunkt abhängig, müssen also zurückgesetzt werden
+      waypoint.pathToHere = [];
+      waypoint.distanceToHere = undefined;
+    }
+
+    // wenn start { type: "exit" } ist, den nächstgelegenen Ausgang vom Ziel aus finden
+    // also Start und Ziel tauschen, dann die erhaltene Liste umkehren
+    let reversed = false;
+    if (start.type === "exit") {
+      reversed = true;
+      [start, destination] = [destination, start];
+    }
+    
+    // darauf achten, dass Start und Ziel folgendermaßen aussehen:
+    // start oder ziel = { type: "POI", name: "..." } oder { type: "exit" }
+
+    // ersten Wegpunkt finden, der zum start-POI gehört
+    start = Object.values(location.waypoints).find(waypoint => waypoint.poi === start.name);
+    // für destination ist dies nicht nötig, da die Wegfindung auf den frühstmöglich passenden Punkt optimieren kann
+
+    let waypointsToCheck = [start];
+
+    while (waypointsToCheck.length > 0) {
+      // wählt den nächsten Wegpunkt, indem .shift() das erste Element der Liste wiedergibt und entfernt
+      // for loop ist nicht möglich, da die Liste während des loops bearbeitet wird
+      const currentWaypoint = waypointsToCheck.shift();
+
+      if (currentWaypoint.poi === destination.name || (currentWaypoint.isExit && destination.type === "exit")) {
+        let finalPath = [...currentWaypoint.pathToHere, currentWaypoint];
+        if (reversed) finalPath.reverse();
+        
+        // finalPath ist nun eine Liste von Wegpunkt-Objekten, mit denen der Client nichts anfangen kann
+        // daher muss er in eine Liste von maps zu Waypoint-IDs umgeformt werden
+        let finalMapPath = [];
+        let currentMap = undefined;
+        let subMapPath = {};
+        for (const waypoint of finalPath) {
+          if (currentMap === undefined) {
+            currentMap = waypoint.map;
+            subMapPath[currentMap] = [];
+          }
+          if (waypoint.map !== currentMap) {
+            finalMapPath.push(subMapPath);
+            subMapPath = {};
+            currentMap = waypoint.map;
+            subMapPath[currentMap] = [];
+          }
+          subMapPath[currentMap].push(waypoint.id);
+        }
+        finalMapPath.push(subMapPath);
+        
+        return finalMapPath;
+      }
+
+      for (const connection of currentWaypoint.connections) {
+        let nextWaypoint = null;
+        if (connection.start === currentWaypoint.id) {
+          nextWaypoint = location.waypoints[connection.end];
+        } else {  // connection.end === currentWaypoint.id
+          nextWaypoint = location.waypoints[connection.start];
+        }
+
+        let mayPass = true;
+        // hier auf Barrierefreiheit und Zugangsberechtigung prüfen
+        if (requirements.accessible && connection.inaccessible) {
+          mayPass = false;
+        } 
+
+        if (mayPass) {
+          const newDistance = currentWaypoint.distanceToHere + (connection.length || 0);
+          if (nextWaypoint.distanceToHere === undefined || nextWaypoint.distanceToHere > newDistance) {
+            nextWaypoint.distanceToHere = newDistance;
+            nextWaypoint.pathToHere = [...currentWaypoint.pathToHere, currentWaypoint];
+          } else {
+            continue;  // der Wegpunkt ist bereits mit einer kürzeren Strecke erreicht worden, über diesen Weg also nicht weiter zu verfolgen
+          }
+
+          waypointsToCheck.push(nextWaypoint);
+        }
+      }
+    }
+
+    return;
+  }
+
+  if (startLocation !== destLocation) {
+    // setze Ziel auf nächstgelegenen Standort-Ausgang
+    let start = { type: "POI", name: startPOI };
+    let destination = { type: "exit" };
+
+    // Route aus Standort 1 heraus
+    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[startLocation]));
+
+    // Verweis auf Navigation zu Standort 2
+    finalPath.push(facilities[facilityName].locations[destLocation].location);
+
+    // Route von Ausgang Standort 2 zum Ziel
+    start = { type: "exit" };
+    destination = { type: "POI", name: destPOI };
+    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[destLocation]));
+  } else {
+    let start = { type: "POI", name: startPOI };
+    let destination = { type: "POI", name: destPOI };
+
+    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[startLocation]));
+  }
 
   res.json(finalPath);
 });
