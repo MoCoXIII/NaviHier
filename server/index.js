@@ -76,6 +76,32 @@ for (const facility in ro_facilities) {
 }
 const facilityNameList = Object.keys(facilities);
 
+class Waypoint {
+  constructor(id, poi, connections, map) {
+    this.id = id;
+    this.poi = poi;
+    this.connections = connections;
+    this.map = map;
+    this.pathToHere = [];
+  }
+}
+for (let [facilityName, facilityData] of Object.entries(facilities)) {
+  for (let [locationName, locationData] of Object.entries(facilityData.locations)) {
+    locationData.waypoints = {};
+    for (let [mapName, mapData] of Object.entries(locationData.maps)) {
+      for (let [waypointID, waypointData] of Object.entries(mapData.waypoints)) {
+        const waypoint = new Waypoint(
+          waypointID,
+          waypointData.poi,
+          mapData.connections.filter(connection => connection.start === waypointID || connection.end === waypointID),
+          mapName
+        );
+        locationData.waypoints[waypointID] = waypoint;
+      }
+    }
+  }
+}
+
 
 // https://expressjs.com/en/5x/api.html#express.json
 // die Middleware erstellt den req.body Eintrag aus empfangenen JSON-Daten
