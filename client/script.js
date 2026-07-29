@@ -19,7 +19,9 @@ function setPathEnds(resolve, reject) {
     const urlParams = new URLSearchParams(window.location.search);
 
     start = urlParams.get('s');
+    if (start) start = decodeURIComponent(start);
     destination = urlParams.get('d');
+    if (destination) destination = decodeURIComponent(destination);
 
     if (start && destination) { resolve(); return; };
 
@@ -181,7 +183,26 @@ let path = null;
 pathSetter.then(() => {  // start und destination erfolgreich festgelegt
     console.log(start);
     console.log(destination);
-    setPath();
+    const getPath = new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', serverURL + "path/" + encodeURIComponent(start) + "/" + encodeURIComponent(destination) + "/" + facility);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {  // 200 = OK
+                    path = JSON.parse(xhr.responseText);
+                    resolve();
+                } else {
+                    console.error('Error:', xhr.status, xhr.responseText);
+                    reject();
+                }
+            }
+        };
+        xhr.send();
+    });
+
+    getPath.then(() => {
+        console.log(path);
+    });
 });
 
 

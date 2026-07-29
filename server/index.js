@@ -72,6 +72,7 @@ for (const facility in ro_facilities) {
     }
   }
 }
+const facilityNameList = Object.keys(facilities);
 
 
 // https://expressjs.com/en/5x/api.html#express.json
@@ -108,7 +109,6 @@ app.get("/poi/{:facility{/:verification}}", (req, res) => {
   // könnte ein solcher Parameter genutzt werden (derzeit ungenutzt)
   const verification = req.params.verification;
 
-  const facilityNameList = Object.keys(facilities);
   if (facilityNameList.length === 1) {
     res.json(JSON.stringify(facilities[facilityNameList[0]].poi));
   } else if (facility) {
@@ -120,6 +120,34 @@ app.get("/poi/{:facility{/:verification}}", (req, res) => {
   } else {
     res.status(400).send(`Expected facility identifier. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
   }
+});
+
+app.get("/path/:start/:destination{/:facility}", (req, res) => {
+  const start = decodeURIComponent(req.params.start);
+  const destination = decodeURIComponent(req.params.destination);
+  let facility = decodeURIComponent(req.params.facility);
+
+  if (facilityNameList.length === 1) {
+    facility = facilityNameList[0];
+  };
+  if (!facility) {
+    res.status(400).send(`Expected facility identifier. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
+  } else if (!facilities[facility]) {
+    res.status(404).send(`Facility ${facility} not found. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
+  };
+
+  if (!start || !destination) {
+    res.status(400).send("Expected start and destination");
+  };
+
+  const [startLocation, startPOI] = start.split(", ");
+  const [destLocation, destPOI] = destination.split(", ");
+
+  let finalPath = [];
+
+  // berechne Weg hier
+
+  res.json(finalPath);
 });
 
 app.listen(port, () => {
