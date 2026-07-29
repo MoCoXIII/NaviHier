@@ -264,6 +264,8 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
           waypointsToCheck.push(nextWaypoint);
         }
       }
+
+      waypointsToCheck.sort((a, b) => a.distanceToHere - b.distanceToHere);
     }
 
     return;
