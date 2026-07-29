@@ -254,6 +254,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
 
         if (mayPass) {
           const newDistance = currentWaypoint.distanceToHere + (connection.length || 0);
+          // Längenvergleich und Vorgehen auf Basis der Länge nach Dijkstra: https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
           if (nextWaypoint.distanceToHere === undefined || nextWaypoint.distanceToHere > newDistance) {
             nextWaypoint.distanceToHere = newDistance;
             nextWaypoint.pathToHere = [...currentWaypoint.pathToHere, currentWaypoint];
