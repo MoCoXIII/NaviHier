@@ -181,9 +181,16 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
   // - destination: Information über einen Punkt, zu dem der Weg gefunden werden soll
   // - location (Object): der Standort, der alle nötigen Wegpunkte, ihre Verbindungen und Attribute enthält
   function findPathInLocation(start, destination, location, requirements={}) {
+    // location.waypoints ist global definiert
+    // daher ändern sich die Attribute der Wegpunkte im globalen Register, wenn diese Wegfindung sie bearbeitet (Attribute pathToHere & distanceToHere)
+    // es muss also eine lokale Kopie dieses Objekts erstellt werden
+    let allWaypoints = {};
+    for (const [waypointID, waypoint] of Object.entries(location.waypoints)) {
+      allWaypoints[waypointID] = new Waypoint(waypoint.id, waypoint.poi, waypoint.connections, waypoint.map);  // klone jeden Wegpunkt
+    }
 
     // zuerst sicherstellen, dass alle Wegpunkte in ihren Attributen zur Wegfindung unspezialisiert sind
-    for (const waypoint of Object.values(location.waypoints)) {
+    for (const waypoint of Object.values(allWaypoints)) {
       // diese beiden Werte sind vom Startpunkt abhängig, müssen also zurückgesetzt werden
       waypoint.pathToHere = [];
       waypoint.distanceToHere = undefined;
@@ -201,7 +208,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
     // start oder ziel = { type: "POI", name: "..." } oder { type: "exit" }
 
     // ersten Wegpunkt finden, der zum start-POI gehört
-    start = Object.values(location.waypoints).find(waypoint => waypoint.poi === start.name);
+    start = Object.values(allWaypoints).find(waypoint => waypoint.poi === start.name);
     // für destination ist dies nicht nötig, da die Wegfindung auf den frühstmöglich passenden Punkt optimieren kann
 
     let waypointsToCheck = [start];
@@ -241,9 +248,9 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
       for (const connection of currentWaypoint.connections) {
         let nextWaypoint = null;
         if (connection.start === currentWaypoint.id) {
-          nextWaypoint = location.waypoints[connection.end];
+          nextWaypoint = allWaypoints[connection.end];
         } else {  // connection.end === currentWaypoint.id
-          nextWaypoint = location.waypoints[connection.start];
+          nextWaypoint = allWaypoints[connection.start];
         }
 
         let mayPass = true;
