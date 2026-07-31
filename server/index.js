@@ -1,14 +1,18 @@
-// WICHTIG:
-// Damit relative Pfade richtig erkannt werden, bitte aus dem Projektordner ausführen:
-// NaviHier$ node ./server/index.js
+// fs nutzt relative Pfade von dem ausgeführten Ordner aus,
+// während require() Pfade relativ von der Datei sind.
+// Somit ist es einfacher, auf einheitliche relative Pfade zuzugreifen,
+// wenn die Datei direkt aus ihrem Ordner ausgeführt wird (NICHT aus Navihier$, sondern NaviHier/server$)
+// NaviHier/server$ node ./index.js
 
 const express = require("express");
 const app = express();
 const port = 8080;
 
+const fs = require('fs');
+
 // Serving der Client-Seite über den Server
 // wird direkt unter "/" geladen, also später nicht versuchen, noch etwas auf app.get("/", ...) anzubieten
-app.use(express.static('client'));
+app.use(express.static('../client'));
 
 
 // Auslesen aller Details aller Einrichtungen (facilities)
@@ -118,18 +122,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/server", (req, res) => {
-
-  let data = req.body;
-
-  let building = data.building;
-  let room = data.room;
-
-  let location = poi[building].location;
-
-  res.json({ building, location, room });
-
-});
+// app.post("/server", (req, res) => {
+//   let data = req.body;
+//   let building = data.building;
+//   let room = data.room;
+//   let location = poi[building].location;
+//   res.json({ building, location, room });
+// });
 
 app.get("/poi/{:facility{/:verification}}", (req, res) => {
   const facility = req.params.facility;
@@ -180,7 +179,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
   // - start: Information über den Punkt, von dem aus begonnen wird
   // - destination: Information über einen Punkt, zu dem der Weg gefunden werden soll
   // - location (Object): der Standort, der alle nötigen Wegpunkte, ihre Verbindungen und Attribute enthält
-  function findPathInLocation(start, destination, location, requirements={}) {
+  function findPathInLocation(start, destination, location, locationName, requirements={}) {
     // location.waypoints ist global definiert
     // daher ändern sich die Attribute der Wegpunkte im globalen Register, wenn diese Wegfindung sie bearbeitet (Attribute pathToHere & distanceToHere)
     // es muss also eine lokale Kopie dieses Objekts erstellt werden
@@ -224,7 +223,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
         
         // finalPath ist nun eine Liste von Wegpunkt-Objekten, mit denen der Client nichts anfangen kann
         // daher muss er in eine Liste von maps zu Waypoint-IDs umgeformt werden
-        let finalMapPath = [];
+        let finalMapPath = {};
         let currentMap = undefined;
         let subMapPath = {};
         for (const waypoint of finalPath) {
@@ -240,7 +239,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
           }
           subMapPath[currentMap].push(waypoint.id);
         }
-        finalMapPath.push(subMapPath);
+        finalMapPath[locationName] = subMapPath;
         
         return finalMapPath;
       }
@@ -285,7 +284,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
     let destination = { type: "exit" };
 
     // Route aus Standort 1 heraus
-    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[startLocation]));
+    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[startLocation], startLocation));
 
     // Verweis auf Navigation zu Standort 2
     finalPath.push(facilities[facilityName].locations[destLocation].location);
@@ -293,15 +292,44 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
     // Route von Ausgang Standort 2 zum Ziel
     start = { type: "exit" };
     destination = { type: "POI", name: destPOI };
-    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[destLocation]));
+    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[destLocation], destLocation));
   } else {
     let start = { type: "POI", name: startPOI };
     let destination = { type: "POI", name: destPOI };
 
-    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[startLocation]));
+    finalPath.push(findPathInLocation(start, destination, facilities[facilityName].locations[startLocation], startLocation));
   }
 
   res.json(finalPath);
+});
+
+app.get("/map/:mapName/:locationName/{:facilityName}", (req, res) => {
+  let facilityName = req.params.facilityName;
+  if (facilityNameList.length === 1) {
+    facilityName = facilityNameList[0];
+  };
+  if (!facilities[facilityName]) {
+    res.status(404).send(`Facility ${facilityName} not found. This server hosts ${facilityNameList.length} facilities: ${facilityNameList}`);
+  };
+  facilityData = facilities[facilityName];
+
+  let locationName = req.params.locationName;
+  if (!facilityData.locations[locationName]) {
+    res.status(404).send(`Location ${locationName} not found in facility ${facilityName}.`);
+  };
+  locationData = facilityData.locations[locationName];
+
+  let mapName = req.params.mapName;
+  if (!locationData.maps[mapName]) {
+    res.status(404).send(`Map ${mapName} not found in location ${locationName}.`);
+  };
+  mapData = locationData.maps[mapName];
+
+  const mapPath = mapData.pathToHere + mapData.images.png;
+
+  // sende base64 encoded PNG-Datei als String
+  const base64Map = fs.readFileSync(mapPath, 'base64');
+  res.send(base64Map);
 });
 
 app.listen(port, () => {

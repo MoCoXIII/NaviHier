@@ -159,7 +159,7 @@ function getPOI(userMessage, resolve, reject) {
                 compiledChoices.push({ value: value, label: label });
             }
         }
-    
+
         const selector = new Choices(selectElement, {
             placeholderValue: userMessage,
             choices: compiledChoices
@@ -202,9 +202,99 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
 
     getPath.then(() => {
         console.log(path);
+
+        function* nextLocationIterator() {
+            for (let locationPath of path) {
+                if (locationPath === null) {
+                    // Weg konnte nicht gefunden werden
+                    yield `<h1>Kein Weg gefunden</h1>`;
+                } else {
+                    // Standort-Wegdaten wiedergeben
+                    yield locationPath;
+                }
+            }
+        };
+        const locationsToWalk = nextLocationIterator();
+
+        function* nextMapIterator(locationPath) {
+            for (let [locationName, mapPath] of Object.entries(locationPath)) {
+                for (let [mapName, waypointIDs] of Object.entries(mapPath)) {
+                    let mapImage = null;
+                    yield new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', serverURL + "map/" + mapName + "/" + locationName + "/" + facility);
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                if (xhr.status === 200) {  // 200 = OK
+                                    mapImage = new Image();
+                                    mapImage.src = "data:image/png;base64," + xhr.responseText;
+                                    resolve(mapImage, waypointIDs);
+                                } else {
+                                    console.error('Error:', xhr.status, xhr.responseText);
+                                    reject();
+                                }
+                            }
+                        }
+                        xhr.send();
+                    });
+                }
+            }
+        };
+        function showNextLocation() {
+            const nextLocation = locationsToWalk.next();
+            if (nextLocation.done) {
+                // Weg komplett abgearbeitet
+                window.location.reload();
+                return;
+            }
+            if (typeof nextLocation.value === "string") {
+                // Weg zu anderem Standort, nutze Kartendienst
+                const showGeoLinks = new Promise((resolve, reject) => {
+                    const responseHTML = `<span>Navigation zu ${nextLocation.value} über</span><br>`
+                        // Google Maps URL Documentation für den Google Maps Link
+                        // https://developers.google.com/maps/documentation/urls/get-started#directions-action
+                        // target="_blank" bedeutet, dass der Link in einem neuen Tab geöffnet wird
+                        + `<a href="https://www.google.com/maps/dir/?api=1&destination=${nextLocation.value}" target="_blank">Google Maps</a><br>`
+                        // Apple Maps URL Documentation für den Apple Maps Link
+                        // https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
+                        + `<a href="https://maps.apple.com/?daddr=${nextLocation.value}" target="_blank">Apple Maps</a>`;
+
+                    document.body.innerHTML = responseHTML;
+
+                    const thereButton = document.createElement("button");
+                    thereButton.innerHTML = "Ich bin angekommen";
+                    thereButton.onclick = resolve;
+                    document.body.appendChild(thereButton);
+                });
+                showGeoLinks.then(() => {
+                    document.body.innerHTML = "";
+                    showNextLocation();
+                });
+                return;
+            }
+            const mapsToWalk = nextMapIterator(nextLocation.value);
+            function showNextMap() {
+                document.body.innerHTML = "";
+                const nextMapIteratorResponse = mapsToWalk.next();
+                if (nextMapIteratorResponse.done) {
+                    // Ziel innerhalb des Gebäudes erreicht
+                    showNextLocation();
+                    return;
+                }
+                const nextMapPromise = nextMapIteratorResponse.value;
+                nextMapPromise.then((mapImage, waypointIDs) => {
+                    document.body.appendChild(mapImage);
+
+                    // hier Wegpunkte auf Karte anzeigen
+
+                    mapImage.onclick = showNextMap;
+                });
+            };
+            showNextMap();  // erste Karte automatisch laden
+        };
+        showNextLocation(); // ersten Standort automatisch laden
     });
 });
-
 
 
 // code hiernach als Kommentar betrachten
@@ -225,15 +315,6 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
 //                 const building = response.building;
 //                 const location = encodeURI(response.location);
 //                 const room = response.room;
-
-//                 const responseHTML = `<span>Navigation zu ${building} über</span><br>`
-//                     // Google Maps URL Documentation für den Google Maps Link
-//                     // https://developers.google.com/maps/documentation/urls/get-started#directions-action
-//                     // target="_blank" bedeutet, dass der Link in einem neuen Tab geöffnet wird
-//                     + `<a href="https://www.google.com/maps/dir/?api=1&destination=${location}" target="_blank">Google Maps</a><br>`
-//                     // Apple Maps URL Documentation für den Apple Maps Link
-//                     // https://developer.apple.com/library/archive/featuredarticles/iPhoneURLScheme_Reference/MapLinks/MapLinks.html
-//                     + `<a href="https://maps.apple.com/?daddr=${location}" target="_blank">Apple Maps</a>`;
 
 //                 document.getElementById('output').innerHTML = responseHTML;
 //             } else {
