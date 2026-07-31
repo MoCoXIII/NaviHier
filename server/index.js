@@ -225,6 +225,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
         // finalPath ist nun eine Liste von Wegpunkt-Objekten, mit denen der Client nichts anfangen kann
         // daher muss er in eine Liste von maps zu Waypoint-IDs umgeformt werden
         let finalMapPath = {};
+        finalMapPath[locationName] = [];
         let currentMap = undefined;
         let subMapPath = {};
         for (const waypoint of finalPath) {
@@ -233,14 +234,14 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
             subMapPath[currentMap] = [];
           }
           if (waypoint.map !== currentMap) {
-            finalMapPath.push(subMapPath);
+            finalMapPath[locationName].push(subMapPath);
             subMapPath = {};
             currentMap = waypoint.map;
             subMapPath[currentMap] = [];
           }
           subMapPath[currentMap].push(waypoint.id);
         }
-        finalMapPath[locationName] = subMapPath;
+        finalMapPath[locationName].push(subMapPath);
         
         return finalMapPath;
       }

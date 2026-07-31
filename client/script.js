@@ -217,26 +217,28 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
         const locationsToWalk = nextLocationIterator();
 
         function* nextMapIterator(locationPath) {
-            for (let [locationName, mapPath] of Object.entries(locationPath)) {
-                for (let [mapName, waypointIDs] of Object.entries(mapPath)) {
-                    let mapImage = null;
-                    yield new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('GET', serverURL + "map/" + mapName + "/" + locationName + "/" + facility);
-                        xhr.onreadystatechange = function () {
-                            if (xhr.readyState === XMLHttpRequest.DONE) {
-                                if (xhr.status === 200) {  // 200 = OK
-                                    mapImage = new Image();
-                                    mapImage.src = "data:image/png;base64," + xhr.responseText;
-                                    resolve(mapImage, waypointIDs);
-                                } else {
-                                    console.error('Error:', xhr.status, xhr.responseText);
-                                    reject();
+            for (let [locationName, mapPaths] of Object.entries(locationPath)) {
+                for (let mapPath of mapPaths) {
+                    for (let [mapName, waypointIDs] of Object.entries(mapPath)) {
+                        let mapImage = null;
+                        yield new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('GET', serverURL + "map/" + mapName + "/" + locationName + "/" + facility);
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState === XMLHttpRequest.DONE) {
+                                    if (xhr.status === 200) {  // 200 = OK
+                                        mapImage = new Image();
+                                        mapImage.src = "data:image/png;base64," + xhr.responseText;
+                                        resolve(mapImage, waypointIDs);
+                                    } else {
+                                        console.error('Error:', xhr.status, xhr.responseText);
+                                        reject();
+                                    }
                                 }
                             }
-                        }
-                        xhr.send();
-                    });
+                            xhr.send();
+                        });
+                    }
                 }
             }
         };
