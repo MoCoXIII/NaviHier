@@ -246,7 +246,7 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
             const nextLocation = locationsToWalk.next();
             if (nextLocation.done) {
                 // Weg komplett abgearbeitet
-                window.location.reload();
+                if (confirm("Das Ziel ist erreicht. Soll die Seite neu geladen werden?")) window.location.reload();
                 return;
             }
             if (typeof nextLocation.value === "string") {
@@ -336,7 +336,7 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
                     circle.style.r = "5px";
                     circle.style.fill = "red";
                     svg.appendChild(circle);
-                    
+
                     // um den Path auf die aktuelle Bildgröße anzupassen, muss sein d-Parameter öfter festgelegt werden können
                     function updatePathD() {
                         // um die Positionen der Wegpunkte auf die aktuelle Bildgröße anzupassen,
@@ -361,10 +361,12 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
                     }
                     window.addEventListener("resize", updatePathD);
                     updatePathD();
-                    
+
                     svg.appendChild(path);
 
-                    svg.onclick = showNextMap;
+                    svg.onclick = () => {
+                        if (confirm("Zur nächsten Karte wechseln?")) showNextMap();
+                    };
                 });
             };
             showNextMap();  // erste Karte automatisch laden
