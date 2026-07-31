@@ -123,14 +123,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.post("/server", (req, res) => {
-//   let data = req.body;
-//   let building = data.building;
-//   let room = data.room;
-//   let location = poi[building].location;
-//   res.json({ building, location, room });
-// });
-
 app.get("/poi/{:facility{/:verification}}", (req, res) => {
   const facility = req.params.facility;
 
