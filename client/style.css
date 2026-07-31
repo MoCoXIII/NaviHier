@@ -7,17 +7,6 @@ input {
     color: #fff;
 }
 
-img, svg {
-    display: block;
-    /* Bild zentrieren */
-    margin-left: auto;
-    margin-right: auto;
-    /* Auf Bildschirmgröße skalieren https://www.w3schools.com/css/css3_object-fit.asp */
-    object-fit: contain;
-    width: 100%;
-    height: 100%;
-}
-
 /* Choices.js style kopiert von https://github.com/Choices-js/Choices#dark-mode-example und bearbeitet */
 @media (prefers-color-scheme: dark) {
     :root {

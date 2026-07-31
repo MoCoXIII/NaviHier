@@ -219,7 +219,7 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
         function* nextMapIterator(locationPath) {
             for (let [locationName, mapPaths] of Object.entries(locationPath)) {
                 for (let mapPath of mapPaths) {
-                    for (let [mapName, waypointIDs] of Object.entries(mapPath)) {
+                    for (let [mapName, waypointsData] of Object.entries(mapPath)) {
                         let mapImage = null;
                         yield new Promise((resolve, reject) => {
                             const xhr = new XMLHttpRequest();
@@ -229,7 +229,7 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
                                     if (xhr.status === 200) {  // 200 = OK
                                         mapImage = new Image();
                                         mapImage.src = "data:image/png;base64," + xhr.responseText;
-                                        resolve(mapImage, waypointIDs);
+                                        resolve([mapImage, waypointsData]);
                                     } else {
                                         console.error('Error:', xhr.status, xhr.responseText);
                                         reject();
@@ -285,12 +285,86 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
                     return;
                 }
                 const nextMapPromise = nextMapIteratorResponse.value;
-                nextMapPromise.then((mapImage, waypointIDs) => {
+                nextMapPromise.then(([mapImage, waypointsData]) => {
                     document.body.appendChild(mapImage);
 
-                    // hier Wegpunkte auf Karte anzeigen
+                    // über das MapImage ein SVG überlagern
+                    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    function update_image_sizes() {
+                        mapImage.style.position = "absolute";
+                        svg.style.position = "absolute";
 
-                    mapImage.onclick = showNextMap;
+                        const widthScale = window.innerWidth / mapImage.naturalWidth;
+                        const heightScale = window.innerHeight / mapImage.naturalHeight;
+                        // mapImage zentrieren und auf Bildschirmgröße wie durch 'object-fit: contain' skalieren
+                        if (widthScale > heightScale) {  // Freiraum in der Breite, also wird nach Höhe skaliert
+                            const newWidth = mapImage.naturalWidth * heightScale;
+                            mapImage.style.top = "0px";
+                            mapImage.style.left = `${(window.innerWidth - newWidth) / 2}px`;
+                            mapImage.style.width = `${newWidth}px`;
+                            mapImage.style.height = `${window.innerHeight}px`;
+                        } else {  // Freiraum in der Höhe, also wird nach Breite skaliert
+                            const newHeight = mapImage.naturalHeight * widthScale;
+                            mapImage.style.top = `${(window.innerHeight - newHeight) / 2}px`;
+                            mapImage.style.left = "0px";
+                            mapImage.style.width = `${window.innerWidth}px`;
+                            mapImage.style.height = `${newHeight}px`;
+                        }
+
+                        // Sind die Werte für das Bild festgelegt, kann das SVG sie kopieren
+                        svg.style.top = mapImage.style.top;
+                        svg.style.left = mapImage.style.left;
+                        svg.style.width = mapImage.style.width;
+                        svg.style.height = mapImage.style.height;
+                    }
+                    window.addEventListener("resize", update_image_sizes);
+                    update_image_sizes();
+                    document.body.appendChild(svg);
+
+                    // Dokumentation für folgende Nutzung des SVG Path Elements
+                    // https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/d
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.style.fill = "none"; // kein geschlossener Pfad, daher wird er nicht ausgefüllt
+                    path.style.stroke = "red"; // die Linie des Pfades kann beliebig gefärbt werden, Rot ist nur gut sichtbar
+
+                    // um zu kennzeichnen, wo gestartet wird, kann der erste Wegpunkt als Kreis auf der Linie dargestellt werden
+                    // am einfachsten ist, dafür einen Kreis unabhängig vom path ins SVG zu bringen
+                    // https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/circle
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.style.cx = `${waypointsData[0].x}px`;
+                    circle.style.cy = `${waypointsData[0].y}px`;
+                    circle.style.r = "5px";
+                    circle.style.fill = "red";
+                    svg.appendChild(circle);
+                    
+                    // um den Path auf die aktuelle Bildgröße anzupassen, muss sein d-Parameter öfter festgelegt werden können
+                    function updatePathD() {
+                        // um die Positionen der Wegpunkte auf die aktuelle Bildgröße anzupassen,
+                        // muss die Skalierung von der eigentlichen Bildgröße ermittelt werden
+                        const scale = mapImage.clientWidth / mapImage.naturalWidth;
+                        // dann kann jeder Wegpunkt auf die aktuelle Bildgröße skaliert werden
+                        // ebenso muss der Kreis angepasst werden
+                        circle.style.cx = `${waypointsData[0].x * scale}px`;
+                        circle.style.cy = `${waypointsData[0].y * scale}px`;
+
+                        // der SVG Path startet bei 0,0
+                        // daher muss zum ersten Punkt bewegt werden, ohne die Linie zu zeichnen
+                        // M bedeutet MoveTo in absoluten Einheiten von oben links (m wäre relativ zum letzten Punkt)
+                        const pathD = `M ${waypointsData[0].x * scale} ${waypointsData[0].y * scale} `
+                            // folgende Wegpunkte können über gerade Linien verbunden werden
+                            // L bedeutet LineTo in absoluten Einheiten von oben links (l wäre relativ zum letzten Punkt)
+                            + waypointsData.slice(1) // ignoriere den ersten Wegpunkt 
+                                .map(waypoint => `L ${waypoint.x * scale} ${waypoint.y * scale}`)  // statt eines Wegpunktobjekts wird "L x y" eingefügt
+                                .join(" ");  // alle "L x y" Wegpunkte werden mit Leerzeichen zu einem einzelnen String verkettet
+
+                        path.setAttribute("d", pathD);
+                    }
+                    window.addEventListener("resize", updatePathD);
+                    updatePathD();
+                    
+                    svg.appendChild(path);
+
+                    svg.onclick = showNextMap;
                 });
             };
             showNextMap();  // erste Karte automatisch laden

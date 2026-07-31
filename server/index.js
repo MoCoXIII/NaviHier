@@ -81,8 +81,10 @@ for (const facility in ro_facilities) {
 const facilityNameList = Object.keys(facilities);
 
 class Waypoint {
-  constructor(id, poi, connections, map, isExit) {
+  constructor(id, x, y, poi, connections, map, isExit) {
     this.id = id;
+    this.x = x;
+    this.y = y;
     this.poi = poi;
     this.connections = connections;
     this.map = map;
@@ -98,6 +100,8 @@ for (let [facilityName, facilityData] of Object.entries(facilities)) {
       for (let [waypointID, waypointData] of Object.entries(mapData.waypoints)) {
         const waypoint = new Waypoint(
           waypointID,
+          waypointData.x,
+          waypointData.y,
           waypointData.poi,
           mapData.connections.filter(connection => connection.start === waypointID || connection.end === waypointID),
           mapName,
@@ -178,7 +182,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
     // es muss also eine lokale Kopie dieses Objekts erstellt werden
     let allWaypoints = {};
     for (const [waypointID, waypoint] of Object.entries(location.waypoints)) {
-      allWaypoints[waypointID] = new Waypoint(waypoint.id, waypoint.poi, waypoint.connections, waypoint.map, waypoint.isExit);  // klone jeden Wegpunkt
+      allWaypoints[waypointID] = new Waypoint(waypoint.id, waypoint.x, waypoint.y, waypoint.poi, waypoint.connections, waypoint.map, waypoint.isExit);  // klone jeden Wegpunkt
     }
 
     // zuerst sicherstellen, dass alle Wegpunkte in ihren Attributen zur Wegfindung unspezialisiert sind
@@ -231,7 +235,14 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
             currentMap = waypoint.map;
             subMapPath[currentMap] = [];
           }
-          subMapPath[currentMap].push(waypoint.id);
+          const waypointInfo = {
+            id: waypoint.id,
+            x: waypoint.x,
+            y: waypoint.y,
+            poi: waypoint.poi,
+            isExit: waypoint.isExit
+          };
+          subMapPath[currentMap].push(waypointInfo);
         }
         finalMapPath[locationName].push(subMapPath);
         
