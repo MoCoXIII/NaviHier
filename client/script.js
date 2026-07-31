@@ -266,6 +266,7 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
                     const thereButton = document.createElement("button");
                     thereButton.innerHTML = "Ich bin angekommen";
                     thereButton.onclick = resolve;
+                    document.body.appendChild(document.createElement("br"));
                     document.body.appendChild(thereButton);
                 });
                 showGeoLinks.then(() => {

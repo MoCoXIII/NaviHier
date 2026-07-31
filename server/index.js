@@ -218,7 +218,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
       // for loop ist nicht möglich, da die Liste während des loops bearbeitet wird
       const currentWaypoint = waypointsToCheck.shift();
 
-      if (currentWaypoint.poi === destination.name || (currentWaypoint.isExit && destination.type === "exit")) {
+      if ((destination.name && currentWaypoint.poi === destination.name) || (currentWaypoint.isExit && destination.type === "exit")) {
         let finalPath = [...currentWaypoint.pathToHere, currentWaypoint];
         if (reversed) finalPath.reverse();
         
