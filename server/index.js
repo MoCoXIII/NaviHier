@@ -81,14 +81,14 @@ for (const facility in ro_facilities) {
 const facilityNameList = Object.keys(facilities);
 
 class Waypoint {
-  constructor(id, poi, connections, map) {
+  constructor(id, poi, connections, map, isExit) {
     this.id = id;
     this.poi = poi;
     this.connections = connections;
     this.map = map;
+    this.isExit = isExit;
     this.pathToHere = [];
     this.distanceToHere = undefined;
-    this.isExit = false;
   }
 }
 for (let [facilityName, facilityData] of Object.entries(facilities)) {
@@ -100,7 +100,8 @@ for (let [facilityName, facilityData] of Object.entries(facilities)) {
           waypointID,
           waypointData.poi,
           mapData.connections.filter(connection => connection.start === waypointID || connection.end === waypointID),
-          mapName
+          mapName,
+          waypointData.isExit
         );
         locationData.waypoints[waypointID] = waypoint;
       }
@@ -185,7 +186,7 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
     // es muss also eine lokale Kopie dieses Objekts erstellt werden
     let allWaypoints = {};
     for (const [waypointID, waypoint] of Object.entries(location.waypoints)) {
-      allWaypoints[waypointID] = new Waypoint(waypoint.id, waypoint.poi, waypoint.connections, waypoint.map);  // klone jeden Wegpunkt
+      allWaypoints[waypointID] = new Waypoint(waypoint.id, waypoint.poi, waypoint.connections, waypoint.map, waypoint.isExit);  // klone jeden Wegpunkt
     }
 
     // zuerst sicherstellen, dass alle Wegpunkte in ihren Attributen zur Wegfindung unspezialisiert sind
