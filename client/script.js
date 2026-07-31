@@ -317,7 +317,6 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
                         svg.style.width = mapImage.style.width;
                         svg.style.height = mapImage.style.height;
                     }
-                    window.addEventListener("resize", update_image_sizes);
                     update_image_sizes();
                     document.body.appendChild(svg);
 
@@ -339,6 +338,12 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
 
                     // um den Path auf die aktuelle Bildgröße anzupassen, muss sein d-Parameter öfter festgelegt werden können
                     function updatePathD() {
+                        // kein Update, wenn der Nutzer in das Bild gezoomt ist
+                        if (window.visualViewport.scale > 1) return;
+
+                        // bevor die Positionen der Wegpunkte auf die aktuelle Bildgröße gebracht werden, muss die Bildgröße korrigiert werden
+                        update_image_sizes();
+
                         // um die Positionen der Wegpunkte auf die aktuelle Bildgröße anzupassen,
                         // muss die Skalierung von der eigentlichen Bildgröße ermittelt werden
                         const scale = mapImage.clientWidth / mapImage.naturalWidth;
