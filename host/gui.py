@@ -10,14 +10,14 @@ import data_manager
 from json_manager import save_data
 
 def plan_selection():
-        print("Wähle den Gebäudeplan aus")
-        try: 
-            plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("All", "*.png;*.jpg;*.jpeg;*.webp"), ("PNG Datei", "*.png"), ("JPG Datei", "*.jpg"), ("JPEG Datei", "*.jpeg"), ("WEBP Datei", "*.webp")], initialdir=r"Gymnasium_Wernigerode")
-            if plan_path == "": 
-                raise FileNotFoundError
-            return plan_path
-        except FileNotFoundError: 
-            exit(0)
+    print("Wähle den Gebäudeplan aus")
+    try: 
+        plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("All", "*.png;*.jpg;*.jpeg;*.webp"), ("PNG Datei", "*.png"), ("JPG Datei", "*.jpg"), ("JPEG Datei", "*.jpeg"), ("WEBP Datei", "*.webp")], initialdir=r"Gymnasium_Wernigerode")
+        if plan_path == "": 
+            raise FileNotFoundError
+        return plan_path
+    except FileNotFoundError: 
+        exit(0)
 
 def plan_create():
     plan_path = plan_selection()
@@ -26,7 +26,6 @@ def plan_create():
     return plan, plan_w, plan_h, plan_path
 
 def window_create():
-    global screen    
     screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h), pygame.RESIZABLE)
     pygame.display.set_caption("Raumeditor")
     epw.link_pygame_window(screen)
@@ -61,7 +60,7 @@ def screenheight_percent(value):
     return data_manager.screen.get_height() * value
 
 def create_background_label():
-    return epw.Label(text = "", screen = room_info_screen, active_unpressed_background_color = (50, 50, 50), 
+    return epw.Label(text = "", screen = data_manager.room_info_screen, active_unpressed_background_color = (50, 50, 50), 
                                                             active_hover_background_color = (50, 50, 50),
                                                             active_pressed_background_color = (50, 50, 50),
                                                             top_left_corner_radius = 15, 
@@ -148,75 +147,239 @@ def show_4_1_button_infosub(info_type):
 
 def room_info_submit_button_hide():
     pos = pygame.mouse.get_pos()
-    btn = data_manager.widget_dic["4_1_button_infosub"]
-    if btn.x <= pos[0] <= btn.x + btn.width and btn.y <= pos[1] <= btn.y + btn.height:
+    button = data_manager.widget_dic["4_1_button_infosub"]
+    if button.x <= pos[0] <= button.x + button.width and button.y <= pos[1] <= button.y + button.height:
         pass
     else:
-        btn.config(visible=False)
+        button.config(visible=False)
         default_w = screenwidth_percent(0.3) - 120
         data_manager.widget_dic["4_1_entry_id"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_name"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_prof"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_extrainfo"].config(width=default_w)
 
-room_creation_screen = epw.Screen(visible = True)
-room_info_screen = epw.Screen(visible = False)
-waypoint_attribute_select = epw.Screen(visible = False)
+def scale_value_hor(value, wi):
+    if callable(value):
+        return value(wi)
+    return value * wi["gen_factor_w"]
+
+def scale_value_ver(value, wi):#
+    if callable(value):
+        return value(wi)
+    return value * wi["gen_factor_h"]
+
+def scale_font(font_size, wi):
+    scaled_size = int(font_size * wi["gen_factor_w"])
+    return epw.SysFont(font="Calibri", font_size=scaled_size)
+
+def scale_widgets(widget_dic, widget_geometry, wi):
+    for name, obj in widget_geometry.items():
+        config = {}
+        if "width" in obj:
+            config["width"] = scale_value_hor(obj["width"], wi)
+        if "height" in obj:
+            config["height"] = scale_value_ver(obj["height"], wi)
+        if "min_width" in obj:
+            config["min_width"] = scale_value_hor(obj["min_width"], wi)
+        if "min_height" in obj:
+            config["min_height"] = scale_value_ver(obj["min_height"], wi)
+        if "font_size" in obj:
+            config["font"] = scale_font(obj["font_size"], wi)
+        if config:
+            widget_dic[name].config(**config)
+
+        place = {}
+        if "x" in obj:
+            place["x"] = scale_value_hor(obj["x"], wi)
+        if "y" in obj:
+            place["y"] = scale_value_ver(obj["y"], wi)
+        if place:
+            widget_dic[name].place(**place)
+
 
 def update_ui(widget_dic, plan, plan_w, plan_h):
-    # Generelle Faktorberechnung
     screen_w, screen_h = data_manager.screen.get_size()
-    data_manager.gen_faktor_w = screen_w / data_manager.ref_w
-    data_manager.gen_faktor_h = screen_h / data_manager.ref_h
-    # Planberechnung
-    max_w = screen_w * 0.40
-    max_h = screen_h * 0.50
-    plan_faktor = min(max_w / plan_w, max_h / plan_h)
-    new_w = int(plan_w * plan_faktor)
-    new_h = int(plan_h * plan_faktor)
-
+    plan_factor = min(screen_w * 0.40 / plan_w, screen_h * 0.50 / plan_h)
     widget_dic["4_01_surface_plan"].config(surface=plan)
     widget_dic["4_01_surface_plan"].place(x=screen_w * 0.30, y=screen_h * 0.25)
-    widget_dic["4_01_surface_plan"].scale(plan_faktor)
-    
-    data_manager.plan_start_x = widget_dic["4_01_surface_plan"].x
-    data_manager.plan_start_y = widget_dic["4_01_surface_plan"].y
+    widget_dic["4_01_surface_plan"].scale(plan_factor)
+    wi = {  # window information
+        "screen_w": screen_w,
+        "screen_h": screen_h,
+        "gen_factor_w": screen_w / data_manager.ref_w,
+        "gen_factor_h": screen_h / data_manager.ref_h,
+        "plan_start_x": widget_dic["4_01_surface_plan"].x,
+        "plan_start_y": widget_dic["4_01_surface_plan"].y,
+        "plan_w": int(plan_w * plan_factor),
+        "plan_h": int(plan_h * plan_factor),
+        "plan_factor": plan_factor
+    }
+    data_manager.plan_start_x = wi["plan_start_x"]
+    data_manager.plan_start_y = wi["plan_start_y"]
+    data_manager.scale = wi["plan_factor"]
+    scale_widgets(data_manager.widget_dic, widget_geometry, wi)
+    return wi["plan_factor"]
 
-    widget_dic["4_01_label_maintitle"].place(x=data_manager.plan_start_x + new_w // 2 - widget_dic["4_01_label_maintitle"].width // 2, y=data_manager.plan_start_y // 2 - widget_dic["4_01_label_maintitle"].height // 2).config(font=epw.SysFont(font="Calibri", font_size=int(65 * data_manager.gen_faktor_w)))
-    widget_dic["4_01_label_statustitle"].place(x=screen_w * 0.3, y=screen_h * 0.8).config(font=epw.SysFont(font="Calibri", font_size=int(40 * data_manager.gen_faktor_w)))
-    widget_dic["4_01_label_statuscontent"].place(x=screen_w * 0.3, y=screen_h * 0.8 + widget_dic["4_01_label_statustitle"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_01_label_statuscontent"].config(min_width=2 * (screen_w * 0.4) // 3)
-
-    widget_dic["4_0_label_roomtype"].place(x=screen_w * 0.15 - widget_dic["4_0_label_roomtype"].width // 2, y=screen_h * 0.25).config(font=epw.SysFont(font="Calibri", font_size=int(40 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_label_squaretype"].place(x=60, y=screen_h * 0.4 - widget_dic["4_0_label_squaretype"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_button_squaretype"].place(x=60, y=screen_h * 0.4).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_label_polytype"].place(x=60, y=screen_h * 0.5 - widget_dic["4_0_label_polytype"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_button_polytype"].place(x=60, y=screen_h * 0.5).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_label_waytype"].place(x=60, y=screen_h * 0.6 - widget_dic["4_0_label_waytype"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_button_waytype"].place(x=60, y=screen_h * 0.6).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_button_createsub"].place(x=60 + widget_dic["4_0_button_squaretype"].width + (screen_w * 0.3 - (60 + widget_dic["4_0_button_squaretype"].width)) // 2 - widget_dic["4_0_button_createsub"].width // 2, y=screen_h * 0.4).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_0_button_createcan"].place(x=widget_dic["4_0_button_createsub"].x, y=screen_h * 0.5 - widget_dic["4_0_button_createcan"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-
-    widget_dic["4_1_button_infosub"].config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_infotitle"].place(x=screen_w * 0.15 - widget_dic["4_1_label_infotitle"].width // 2, y=screen_h * 0.25).config(font=epw.SysFont(font="Calibri", font_size=int(40 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_id"].place(x=60, y=screen_h * 0.4 - widget_dic["4_1_label_id"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr1"].place(x=60, y=screen_h * 0.4).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), min_width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_entry_id"].place(x=60, y=screen_h * 0.4).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), height=int(57 * data_manager.gen_faktor_h), width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_label_name"].place(x=60, y=screen_h * 0.5 - widget_dic["4_1_label_name"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr2"].place(x=60, y=screen_h * 0.5).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), min_width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_entry_name"].place(x=60, y=screen_h * 0.5).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), height=int(57 * data_manager.gen_faktor_h), width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_label_prof"].place(x=60, y=screen_h * 0.6 - widget_dic["4_1_label_prof"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr3"].place(x=60, y=screen_h * 0.6).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), min_width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_entry_prof"].place(x=60, y=screen_h * 0.6).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), height=int(57 * data_manager.gen_faktor_h), width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_label_extrainfo"].place(x=60, y=screen_h * 0.7 - widget_dic["4_1_label_extrainfo"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_entrybackgr4"].place(x=60, y=screen_h * 0.7).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), min_width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_entry_extrainfo"].place(x=60, y=screen_h * 0.7).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)), height=int(57 * data_manager.gen_faktor_h), width=int((screenwidth_percent(0.3) - 120) * data_manager.gen_faktor_w))
-    widget_dic["4_1_button_finishsub"].place(x=60, y=screen_h * 0.8 - widget_dic["4_1_button_finishsub"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_button_finishcan"].place(x=240, y=screen_h * 0.8 - widget_dic["4_1_button_finishcan"].height).config(font=epw.SysFont(font="Calibri", font_size=int(30 * data_manager.gen_faktor_w)))
-    widget_dic["4_1_label_starinfo"].place(x=60, y=screen_h * 0.875 - widget_dic["4_1_label_starinfo"].height).config(font=epw.SysFont(font="Calibri", font_size=int(20 * data_manager.gen_faktor_w)))
-    
-    data_manager.scale = plan_faktor
-    return plan_faktor
+widget_geometry = {
+    "4_01_label_maintitle": {
+        "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] // 2 - data_manager.widget_dic["4_01_label_maintitle"].width // 2,
+        "y": lambda wi: wi["plan_start_y"] // 2 - data_manager.widget_dic["4_01_label_maintitle"].height // 2,
+        "font_size": 65,
+    },
+    "4_01_label_statustitle": {
+        "x": 0.3 * data_manager.ref_w,
+        "y": 0.8 * data_manager.ref_h,
+        "font_size": 40,
+    },
+    "4_01_label_statuscontent": {
+        "x": 0.3 * data_manager.ref_w,
+        "y": lambda wi: wi["screen_h"] * 0.8 + data_manager.widget_dic["4_01_label_statustitle"].height,
+        "font_size": 30,
+        "min_width": lambda wi: 2 * (wi["screen_w"] * 0.4) // 3,
+    },
+    "4_0_label_roomtype": {
+        "x": lambda wi: wi["screen_w"] * 0.15 - data_manager.widget_dic["4_0_label_roomtype"].width // 2,
+        "y": lambda wi: wi["screen_h"] * 0.25,
+        "font_size": 40,
+    },
+    "4_0_label_squaretype": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.4 - data_manager.widget_dic["4_0_label_squaretype"].height,
+        "font_size": 30,
+    },
+    "4_0_button_squaretype": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30,
+    },
+    "4_0_label_polytype": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.5 - data_manager.widget_dic["4_0_label_polytype"].height,
+        "font_size": 30,
+    },
+    "4_0_button_polytype": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.5,
+        "font_size": 30,
+    },
+    "4_0_label_waytype": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.6 - data_manager.widget_dic["4_0_label_waytype"].height,
+        "font_size": 30,
+    },
+    "4_0_button_waytype": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.6,
+        "font_size": 30,
+    },
+    "4_0_button_createsub": {
+        "x": lambda wi: 60 + data_manager.widget_dic["4_0_button_squaretype"].width
+             + (wi["screen_w"] * 0.3 - (60 + data_manager.widget_dic["4_0_button_squaretype"].width)) // 2
+             - data_manager.widget_dic["4_0_button_createsub"].width // 2,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30,
+    },
+    "4_0_button_createcan": {
+        "x": lambda wi: data_manager.widget_dic["4_0_button_createsub"].x,
+        "y": lambda wi: wi["screen_h"] * 0.5 - data_manager.widget_dic["4_0_button_createcan"].height,
+        "font_size": 30,
+    },
+    "4_1_button_infosub": {
+        "font_size": 30,
+    },
+    "4_1_label_infotitle": {
+        "x": lambda wi: wi["screen_w"] * 0.15 - data_manager.widget_dic["4_1_label_infotitle"].width // 2,
+        "y": lambda wi: wi["screen_h"] * 0.25,
+        "font_size": 40,
+    },
+    "4_1_label_id": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.4 - data_manager.widget_dic["4_1_label_id"].height,
+        "font_size": 30,
+    },
+    "4_1_label_entrybackgr1": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30,
+        "min_width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_entry_id": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30,
+        "height": 57,
+        "width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_label_name": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.5 - data_manager.widget_dic["4_1_label_name"].height,
+        "font_size": 30,
+    },
+    "4_1_label_entrybackgr2": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.5,
+        "font_size": 30,
+        "min_width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_entry_name": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.5,
+        "font_size": 30,
+        "height": 57,
+        "width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_label_prof": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.6 - data_manager.widget_dic["4_1_label_prof"].height,
+        "font_size": 30,
+    },
+    "4_1_label_entrybackgr3": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.6,
+        "font_size": 30,
+        "min_width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_entry_prof": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.6,
+        "font_size": 30,
+        "height": 57,
+        "width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_label_extrainfo": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.7 - data_manager.widget_dic["4_1_label_extrainfo"].height,
+        "font_size": 30,
+    },
+    "4_1_label_entrybackgr4": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.7,
+        "font_size": 30,
+        "min_width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_entry_extrainfo": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.7,
+        "font_size": 30,
+        "height": 57,
+        "width": lambda wi: (wi["screen_w"] * 0.3) - 120,
+    },
+    "4_1_button_finishsub": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.8 - data_manager.widget_dic["4_1_button_finishsub"].height,
+        "font_size": 30,
+    },
+    "4_1_button_finishcan": {
+        "x": 240,
+        "y": lambda wi: wi["screen_h"] * 0.8 - data_manager.widget_dic["4_1_button_finishcan"].height,
+        "font_size": 30,
+    },
+    "4_1_label_starinfo": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.875 - data_manager.widget_dic["4_1_label_starinfo"].height,
+        "font_size": 20,
+    }
+}
 
 def create_widgets(plan):
     data_manager.room_creation_screen = epw.Screen(visible=True)
@@ -242,13 +405,13 @@ def create_widgets(plan):
         "4_0_button_createcan": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command=room_create_cancel, screen=data_manager.room_creation_screen),
         "4_1_label_infotitle": epw.Label(text="Rauminformationen", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.room_info_screen),
         "4_1_label_id": epw.Label(text="Raum Nr / ID *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
-        "4_1_entry_id": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, width=screenwidth_percent(0.3) - 120, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+        "4_1_entry_id": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("id")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
         "4_1_label_name": epw.Label(text="Raum Name **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
-        "4_1_entry_name": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, width=screenwidth_percent(0.3) - 120, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+        "4_1_entry_name": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("name")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
         "4_1_label_prof": epw.Label(text="Raum Lehrer / Professor **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
-        "4_1_entry_prof": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, width=screenwidth_percent(0.3) - 120, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+        "4_1_entry_prof": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("prof")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
         "4_1_label_extrainfo": epw.Label(text="Raum Zusatzinformationen **", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
-        "4_1_entry_extrainfo": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, width=screenwidth_percent(0.3) - 120, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
+        "4_1_entry_extrainfo": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, screen=data_manager.room_info_screen).bind("<FOCUS-IN>", lambda: show_4_1_button_infosub("extra")).bind("<FOCUS-OUT>", room_info_submit_button_hide, False),
         "4_1_button_infosub": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=room_info_submit, height=57, auto_size=False, corner_radius=15, visible=False, screen=data_manager.room_info_screen),
         "4_1_label_entrybackgr1": create_background_label(),
         "4_1_label_entrybackgr2": create_background_label(),
