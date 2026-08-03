@@ -39,17 +39,19 @@ def window_create():
 def square_selected():
     if data_manager.shape == 0:
         data_manager.shape = 1
-        data_manager.widget_dic["4_01_label_statuscontent"].config(text = "Quadratischer Raumtyp Ausgewählt")
+        data_manager.widget_dic["4_012_label_statuscontent"].config(text = "Quadratischer Raumtyp Ausgewählt")
 
 def polygon_selected():
     if data_manager.shape == 0:
         data_manager.shape = 2
-        data_manager.widget_dic["4_01_label_statuscontent"].config(text = "Polygonaler Raumtyp Ausgewählt")
+        data_manager.widget_dic["4_012_label_statuscontent"].config(text = "Polygonaler Raumtyp Ausgewählt")
 
 def waypoint_selected():
     if data_manager.shape == 0:
         data_manager.shape = 3
-        data_manager.widget_dic["4_01_label_statuscontent"].config(text = "Waypoint Ausgewählt")
+        data_manager.widget_dic["4_012_label_statuscontent"].config(text = "Waypoint Ausgewählt")
+        data_manager.widget_dic["4_0_screen_group"].hide()
+        data_manager.widget_dic["4_2_screen_group"].show()
 
 
 def screenwidth_percent(value):
@@ -91,10 +93,7 @@ def room_create_cancel():
     data_manager.p_coords.clear()
     data_manager.s_coords_count = 0
     data_manager.p_coords_count = 0
-    data_manager.s_submit = False
-    data_manager.p_submit = False
-    data_manager.w_submit = False
-    data_manager.widget_dic["4_01_label_statuscontent"].config(text = "Zurücksetzen des Raumtyps")
+    data_manager.widget_dic["4_012_label_statuscontent"].config(text = "Zurücksetzen des Raumtyps")
 
 def room_info_submit():
     if data_manager.widget_dic["4_1_button_infosub"].y == screenheight_percent(0.4):
@@ -124,7 +123,7 @@ def room_create_finish_cancel():
     data_manager.widget_dic["4_1_entry_extrainfo"].config(text="")
     data_manager.widget_dic["4_1_screen_group"].hide()
     data_manager.widget_dic["4_0_screen_group"].show()
-    data_manager.widget_dic["4_01_label_statuscontent"].config(text="Zurücksetzen der Raumerstellung")
+    data_manager.widget_dic["4_012_label_statuscontent"].config(text="Zurücksetzen der Raumerstellung")
 
 def show_4_1_button_infosub(info_type):
     epw.schedule(delay_4_1_button_infosub, 1)
@@ -157,6 +156,10 @@ def room_info_submit_button_hide():
         data_manager.widget_dic["4_1_entry_name"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_prof"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_extrainfo"].config(width=default_w)
+
+def wp_newline():
+    data_manager.widget_dic["4_012_label_statuscontent"].config(text="Neue Wegpunktlinie erstellen")
+
 
 def scale_value_hor(value, wi):
     if callable(value):
@@ -200,16 +203,16 @@ def scale_widgets(widget_dic, widget_geometry, wi):
 def update_ui(widget_dic, plan, plan_w, plan_h):
     screen_w, screen_h = data_manager.screen.get_size()
     plan_factor = min(screen_w * 0.40 / plan_w, screen_h * 0.50 / plan_h)
-    widget_dic["4_01_surface_plan"].config(surface=plan)
-    widget_dic["4_01_surface_plan"].place(x=screen_w * 0.30, y=screen_h * 0.25)
-    widget_dic["4_01_surface_plan"].scale(plan_factor)
+    widget_dic["4_012_surface_plan"].config(surface=plan)
+    widget_dic["4_012_surface_plan"].place(x=screen_w * 0.30, y=screen_h * 0.25)
+    widget_dic["4_012_surface_plan"].scale(plan_factor)
     wi = {  # window information
         "screen_w": screen_w,
         "screen_h": screen_h,
         "gen_factor_w": screen_w / data_manager.ref_w,
         "gen_factor_h": screen_h / data_manager.ref_h,
-        "plan_start_x": widget_dic["4_01_surface_plan"].x,
-        "plan_start_y": widget_dic["4_01_surface_plan"].y,
+        "plan_start_x": widget_dic["4_012_surface_plan"].x,
+        "plan_start_y": widget_dic["4_012_surface_plan"].y,
         "plan_w": int(plan_w * plan_factor),
         "plan_h": int(plan_h * plan_factor),
         "plan_factor": plan_factor
@@ -221,19 +224,19 @@ def update_ui(widget_dic, plan, plan_w, plan_h):
     return wi["plan_factor"]
 
 widget_geometry = {
-    "4_01_label_maintitle": {
-        "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] // 2 - data_manager.widget_dic["4_01_label_maintitle"].width // 2,
-        "y": lambda wi: wi["plan_start_y"] // 2 - data_manager.widget_dic["4_01_label_maintitle"].height // 2,
+    "4_012_label_maintitle": {
+        "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] // 2 - data_manager.widget_dic["4_012_label_maintitle"].width // 2,
+        "y": lambda wi: wi["plan_start_y"] // 2 - data_manager.widget_dic["4_012_label_maintitle"].height // 2,
         "font_size": 65,
     },
-    "4_01_label_statustitle": {
+    "4_012_label_statustitle": {
         "x": 0.3 * data_manager.ref_w,
         "y": 0.8 * data_manager.ref_h,
         "font_size": 40,
     },
-    "4_01_label_statuscontent": {
+    "4_012_label_statuscontent": {
         "x": 0.3 * data_manager.ref_w,
-        "y": lambda wi: wi["screen_h"] * 0.8 + data_manager.widget_dic["4_01_label_statustitle"].height,
+        "y": lambda wi: wi["screen_h"] * 0.8 + data_manager.widget_dic["4_012_label_statustitle"].height,
         "font_size": 30,
         "min_width": lambda wi: 2 * (wi["screen_w"] * 0.4) // 3,
     },
@@ -378,22 +381,32 @@ widget_geometry = {
         "x": 60,
         "y": lambda wi: wi["screen_h"] * 0.875 - data_manager.widget_dic["4_1_label_starinfo"].height,
         "font_size": 20,
+    },
+    "4_2_label_createtitle": {
+        "x": lambda wi: wi["screen_w"] * 0.15 - data_manager.widget_dic["4_2_label_createtitle"].width // 2,
+        "y": lambda wi: wi["screen_h"] * 0.25,
+        "font_size": 40, 
+    },
+    "4_2_button_newline": {
+        "x": 60,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30,
     }
 }
 
 def create_widgets(plan):
     data_manager.room_creation_screen = epw.Screen(visible=True)
     data_manager.room_info_screen = epw.Screen(visible=False)
-    data_manager.waypoint_attribute_select = epw.Screen(visible=False)
+    data_manager.waypoint_creation_screen = epw.Screen(visible=False)
 
     widget_dic = {
         "4_0_screen_group": data_manager.room_creation_screen,
         "4_1_screen_group": data_manager.room_info_screen,
-        "4_2_screen_group": data_manager.waypoint_attribute_select,
-        "4_01_surface_plan": epw.Surface(plan),
-        "4_01_label_maintitle": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
-        "4_01_label_statustitle": epw.Label(text="Status", font=epw.SysFont(font="Calibri", font_size=40, bold=True), alignment_spacing=0, alignment="left"),
-        "4_01_label_statuscontent": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15),
+        "4_2_screen_group": data_manager.waypoint_creation_screen,
+        "4_012_surface_plan": epw.Surface(plan),
+        "4_012_label_maintitle": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
+        "4_012_label_statustitle": epw.Label(text="Status", font=epw.SysFont(font="Calibri", font_size=40, bold=True), alignment_spacing=0, alignment="left"),
+        "4_012_label_statuscontent": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15),
         "4_0_label_roomtype": epw.Label(text="Raumtyp - / Wegpunktauswahl", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.room_creation_screen),
         "4_0_label_squaretype": epw.Label(text="Quadratischer Raum", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_creation_screen),
         "4_0_button_squaretype": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command=square_selected, screen=data_manager.room_creation_screen),
@@ -420,6 +433,8 @@ def create_widgets(plan):
         "4_1_button_finishsub": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=room_create_finish_submit, screen=data_manager.room_info_screen),
         "4_1_button_finishcan": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command=room_create_finish_cancel, screen=data_manager.room_info_screen),
         "4_1_label_starinfo": epw.Label(text="* max. eine Angabe\n** optionale Angabe", font=epw.SysFont(font="Calibri", font_size=20), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
+        "4_2_label_createtitle": epw.Label(text="Wegpunkterstellung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_creation_screen),
+        "4_2_button_newline": epw.Button(text="Neue Wegpunktlinie", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline, screen=data_manager.waypoint_creation_screen),
     }
     return widget_dic
 

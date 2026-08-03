@@ -21,7 +21,7 @@ while running:
     # färben des Hintergrunds
     data_manager.screen.fill((30, 30, 30))
 
-    if data_manager.s_submit == True or data_manager.p_submit == True or data_manager.w_submit == True:
+    if data_manager.s_coords_count == 2 or data_manager.p_coords_count >= 3:
         widget_dic["4_0_button_createsub"].config(state = "enabled")
     else:
         widget_dic["4_0_button_createsub"].config(state = "disabled")
@@ -52,11 +52,9 @@ while running:
                         data_manager.s_coords.append(s_x)
                         data_manager.s_coords.append(s_y)
                         data_manager.s_coords_count += 1
-                        widget_dic["4_01_label_statuscontent"].config(text=f"Die Koordinate {s_x}, {s_y} wurde hinzugefügt.")
-                    if data_manager.s_coords_count >= 2:
-                        data_manager.s_submit = True
+                        widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {s_x}, {s_y} wurde hinzugefügt.")
                 elif 0 <= s_x <= plan_w and 0 <= s_y <= plan_h:
-                    widget_dic["4_01_label_statuscontent"].config(text=f"Es wurden bereits zwei Koordinaten hinzugefügt. [{data_manager.s_coords[0]}, {data_manager.s_coords[1]}]; [{data_manager.s_coords[2]}, {data_manager.s_coords[3]}]")
+                    widget_dic["4_012_label_statuscontent"].config(text=f"Es wurden bereits zwei Koordinaten hinzugefügt. [{data_manager.s_coords[0]}, {data_manager.s_coords[1]}]; [{data_manager.s_coords[2]}, {data_manager.s_coords[3]}]")
 
             elif data_manager.shape == 2:
                 pos = pygame.mouse.get_pos()
@@ -64,54 +62,48 @@ while running:
                 if 0 <= p_x <= plan_w and 0 <= p_y <= plan_h:
                     data_manager.p_coords.append(p_x)
                     data_manager.p_coords.append(p_y)
-                    widget_dic["4_01_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")
+                    widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")
                     data_manager.p_coords_count += 1
-                    if data_manager.p_coords_count >= 3:
-                        data_manager.p_submit = True
 
             elif data_manager.shape == 3:
                 pos = pygame.mouse.get_pos()
                 w_x, w_y = int((pos[0] - data_manager.plan_start_x) / current_scale), int((pos[1] - data_manager.plan_start_y) / current_scale)
-                if data_manager.w_coords_count == 0 and 0 <= w_x <= plan_w and 0 <= w_y <= plan_h:
+                if 0 <= w_x <= plan_w and 0 <= w_y <= plan_h:
                     data_manager.w_coords.append(w_x)
                     data_manager.w_coords.append(w_y)
                     data_manager.w_coords_count += 1
-                    widget_dic["4_01_label_statuscontent"].config(text=f"Die Koordinate {w_x}, {w_y} wurde hinzugefügt.")
-                    if data_manager.w_coords_count == 1:
-                        data_manager.w_submit = True
+                    print(data_manager.w_coords_count)
+                    widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {w_x}, {w_y} wurde hinzugefügt.")
         
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
             if data_manager.shape == 1 and data_manager.s_coords_count > 0:
                 data_manager.s_coords.pop()
                 data_manager.s_coords.pop()
                 data_manager.s_coords_count -= 1
-                if data_manager.s_coords_count == 0:
-                    data_manager.s_submit = False
+                print(data_manager.s_coords_count)
+                widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {s_x}, {s_y} wurde entfernt.")
             
             if data_manager.shape == 2 and data_manager.p_coords_count > 0:
                 data_manager.p_coords.pop()
                 data_manager.p_coords.pop()
                 data_manager.p_coords_count -= 1
-                if data_manager.p_coords_count == 0:
-                    data_manager.p_submit = False
+                widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde entfernt.")
             
-            if data_manager.shape == 3 and data_manager.w_coords_count == 1:
+            if data_manager.shape == 3 and data_manager.w_coords_count > 0:
                 data_manager.w_coords.pop()
                 data_manager.w_coords.pop()
                 data_manager.w_coords_count -= 1
-                if data_manager.w_coords_count == 0:
-                    data_manager.w_submit = False
+                print(data_manager.w_coords_count)
+                widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {w_x}, {w_y} wurde entfernt.")
             
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and data_manager.shape in (1, 2, 3):
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and data_manager.shape in (1, 2, 3) and data_manager.widget_dic["4_0_screen_group"].visible:
             data_manager.s_coords.clear()
             data_manager.p_coords.clear()
             data_manager.w_coords.clear()
             data_manager.s_coords_count = 0
             data_manager.p_coords_count = 0
             data_manager.w_coords_count = 0
-            data_manager.s_submit = False
-            data_manager.p_submit = False
-            data_manager.w_submit = False
+            widget_dic["4_012_label_statuscontent"].config(text="Zurücksetzen der Variablen")
 
         elif event.type == pygame.QUIT:
             running = False

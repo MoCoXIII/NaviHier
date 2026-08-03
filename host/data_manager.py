@@ -41,9 +41,8 @@ s_coords_count = 0
 p_coords_count = 0
 w_coords_count = 0
 
-s_submit = False
-p_submit = False
-w_submit = False
+
+
 
 scale = 0
 gen_faktor_w = 1.0
