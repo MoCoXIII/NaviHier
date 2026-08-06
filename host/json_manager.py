@@ -1,6 +1,11 @@
 import json
 from pathlib import Path
 
+def floor_name(plan_path):
+    path_objekt = Path(plan_path)
+    folder = path_objekt.parent.parent
+    return folder.name    
+
 def json_path(plan_path):
     path_objekt = Path(plan_path)
     json_folder = path_objekt.parent.parent

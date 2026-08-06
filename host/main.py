@@ -6,6 +6,7 @@ import pygame
 import easypygamewidgets as epw
 import data_manager
 from gui import window_create, plan_create, get_widget_dic, update_ui
+from json_manager import floor_name
 
 pygame.init()
 
@@ -14,7 +15,7 @@ plan, plan_w, plan_h, plan_path = plan_create()
 data_manager.plan_path = plan_path
 
 widget_dic = get_widget_dic(plan)
-scale =update_ui(widget_dic, plan, plan_w, plan_h)
+scale = update_ui(widget_dic, plan, plan_w, plan_h)
 
 running = True
 while running:
@@ -65,15 +66,35 @@ while running:
                     widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")
                     data_manager.p_coords_count += 1
 
-            elif data_manager.shape == 3:
+            elif data_manager.new_line:
+                if not data_manager.show_line: data_manager.show_line = True
                 pos = pygame.mouse.get_pos()
                 w_x, w_y = int((pos[0] - data_manager.plan_start_x) / current_scale), int((pos[1] - data_manager.plan_start_y) / current_scale)
                 if 0 <= w_x <= plan_w and 0 <= w_y <= plan_h:
                     data_manager.w_coords.append(w_x)
                     data_manager.w_coords.append(w_y)
                     data_manager.w_coords_count += 1
-                    print(data_manager.w_coords_count)
+                    data_manager.waypoint_id += 1
                     widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {w_x}, {w_y} wurde hinzugefügt.")
+
+                    w_name = f"{floor_name(data_manager.plan_path)}_{w_x},{w_y}"
+                    info = {
+                        "x": pos[0],
+                        "y": pos[1],
+                        "stair": False
+                    }
+                    waypoint_list_data = {
+                        "name": w_name,
+                        "line_ID": data_manager.line_id,
+                        "waypoint_ID": data_manager.waypoint_id
+                    }
+                    data_manager.waypoint_list.append(waypoint_list_data)
+                    print(data_manager.waypoint_list)
+                    data_manager.widget_geometry[w_name] = info
+                    waypoint_asset = pygame.image.load("assets/waypoint.png")
+                    data_manager.widget_dic[w_name] = epw.Surface(waypoint_asset, anchor_x="center", anchor_y="center", layer=3000)
+                    data_manager.widget_dic[w_name].scale(0.02, 1)
+                    data_manager.widget_dic[w_name].place(x = pos[0], y = pos[1])
         
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
             if data_manager.shape == 1 and data_manager.s_coords_count > 0:
@@ -104,6 +125,10 @@ while running:
             data_manager.p_coords_count = 0
             data_manager.w_coords_count = 0
             widget_dic["4_012_label_statuscontent"].config(text="Zurücksetzen der Variablen")
+
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            data_manager.new_line = False
+            data_manager.show_line = False
 
         elif event.type == pygame.QUIT:
             running = False

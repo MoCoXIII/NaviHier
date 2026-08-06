@@ -18,6 +18,12 @@ widget_dic = {}
 
 shape = 0
 
+waypoint_list = []
+new_line = False
+show_line = True
+line_id = 0
+waypoint_id = 0
+
 id_answer_list = []
 name_answer_list = []
 prof_answer_list = []
@@ -40,9 +46,6 @@ w_coords = []
 s_coords_count = 0
 p_coords_count = 0
 w_coords_count = 0
-
-
-
 
 scale = 0
 gen_faktor_w = 1.0
