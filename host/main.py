@@ -6,7 +6,7 @@ import pygame
 import easypygamewidgets as epw
 import data_manager
 from gui import window_create, plan_create, get_widget_dic, update_ui
-from json_manager import floor_name, add_waypoint_json, add_connection_json
+from json_manager import floor_name, add_waypoint_json, del_waypoint_json, add_connection_json, del_connection_json
 
 pygame.init()
 
@@ -124,8 +124,10 @@ while running:
                 data_manager.w_coords.pop()
                 data_manager.w_coords.pop()
                 data_manager.w_coords_count -= 1
-                print(data_manager.w_coords_count)
-            
+                data_manager.waypoint_list.pop()
+                del_waypoint_json(data_manager.plan_path)
+                del_connection_json(data_manager.plan_path)
+
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and data_manager.shape in (1, 2, 3) and data_manager.widget_dic["4_0_screen_group"].visible:
             data_manager.s_coords.clear()
             data_manager.p_coords.clear()
