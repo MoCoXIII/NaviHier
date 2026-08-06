@@ -13,7 +13,7 @@ def json_path(plan_path):
     return json_path
 
 
-def add_json(data, plan_path):
+def add_room_json(data, plan_path):
     with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     current_data["rooms"].append(data)
@@ -31,4 +31,4 @@ def save_data(plan_path,shape, nr, name, prof, exrainf):
           }
     elif shape == 3:
         data = {}
-    add_json(data, plan_path)
+    add_room_json(data, plan_path)

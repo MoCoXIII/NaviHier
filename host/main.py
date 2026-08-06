@@ -6,7 +6,7 @@ import pygame
 import easypygamewidgets as epw
 import data_manager
 from gui import window_create, plan_create, get_widget_dic, update_ui
-from json_manager import floor_name
+from json_manager import floor_name, add_waypoint_json
 
 pygame.init()
 
@@ -81,15 +81,18 @@ while running:
                     info = {
                         "x": pos[0],
                         "y": pos[1],
-                        "stair": False
                     }
                     waypoint_list_data = {
                         "name": w_name,
                         "line_ID": data_manager.line_id,
                         "waypoint_ID": data_manager.waypoint_id
                     }
+                    json_data = {
+                        "x": w_x,
+                        "y": w_y
+                    }
+                    add_waypoint_json(json_data, w_name, data_manager.plan_path)
                     data_manager.waypoint_list.append(waypoint_list_data)
-                    print(data_manager.waypoint_list)
                     data_manager.widget_geometry[w_name] = info
                     waypoint_asset = pygame.image.load("assets/waypoint.png")
                     data_manager.widget_dic[w_name] = epw.Surface(waypoint_asset, anchor_x="center", anchor_y="center", layer=3000)
