@@ -1,8 +1,2 @@
-pygame-ce
-pathlib
-customtkinter
-easypygamewidgets
-
-## Do not add build-in libraries to requirenment.txt
-# json
-# ctypes
+customtkinter==6.0.0
+easypygamewidgets==26.33
