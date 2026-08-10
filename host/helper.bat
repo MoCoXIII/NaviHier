@@ -5,7 +5,9 @@ echo Dieses Skript automatisiert sinnvolle Funktionen rund um das NaviHier Host-
 :: Beim Schreiben von Nutzerinteraktionen ist zu beachten, dass echo UTF-8 nicht unterstützt, weshalb Sonderzeichen wie äöü vermieden werden sollten.
 echo.
 echo.
-echo WICHTIG: Dieses Skript ist nur von Entwicklern zu nutzen. Bitte beende das Programm, wenn du nicht weißt, was du tust.
+:: https://ss64.com/nt/syntax-ansi.html für Color-Codes
+:: Escape Character  von https://gist.githubusercontent.com/mlocati/fdabcaeb8071d5c75a2d51712db24011/raw/b710612d6320df7e146508094e84b92b34c77d48/win10colors.cmd
+echo [31m WICHTIG: Dieses Skript ist nur von Entwicklern zu nutzen. Bitte beende das Programm, wenn du nicht sicher bist, was du tust. [0m
 echo.
 echo.
 
