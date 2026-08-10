@@ -8,6 +8,8 @@ ref_h = 1440
 
 screen = None
 plan = None
+plan_w = 0
+plan_h = 0
 plan_path = ""
 
 room_creation_screen = None
@@ -23,6 +25,8 @@ new_line = False
 show_line = True
 line_id = 0
 waypoint_id = 0
+poi = False
+wp_name = ""
 
 id_answer_list = []
 name_answer_list = []
@@ -48,5 +52,5 @@ p_coords_count = 0
 w_coords_count = 0
 
 scale = 0
-gen_faktor_w = 1.0
-gen_faktor_h = 1.0
+gen_factor_w = 1.0
+gen_factor_h = 1.0

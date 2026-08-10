@@ -7,7 +7,7 @@ import easypygamewidgets as epw
 import customtkinter
 import ctypes
 import data_manager
-from json_manager import save_data
+from json_manager import save_data, get_room_list, add_poi
 
 def plan_selection():
     print("Wähle den Gebäudeplan aus")
@@ -35,6 +35,10 @@ def window_create():
     ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(appereance_mode), ctypes.sizeof(appereance_mode))     # DwmSetWindowAttribute: Funktion zum Ändern des Anzeigemodus der Titelleiste       # ctypes.byref: Funktion zu Bestimmen des Speicherorts der Variable; ctypes.sizeof: Funktion zum Bestimmen des Speicherplatzes der Variable (int: 4)
     pygame.event.pump()
     return screen                                                                                                           # update von Pygame
+
+def update_gen_factor():
+    data_manager.gen_factor_w = data_manager.screen.get_width() / data_manager.ref_w
+    data_manager.gen_factor_h = data_manager.screen.get_height() / data_manager.ref_h
 
 def square_selected():
     if data_manager.shape == 0:
@@ -128,7 +132,7 @@ def room_create_finish_cancel():
 def show_4_1_button_infosub(info_type):
     epw.schedule(delay_4_1_button_infosub, 1)
     btn_w = data_manager.widget_dic["4_1_button_infosub"].width
-    target_w = int((screenwidth_percent(0.3) - 60 - btn_w) * data_manager.gen_faktor_w)
+    target_w = int((screenwidth_percent(0.3) - 60 - btn_w) * data_manager.gen_factor_w)
     
     data_manager.widget_dic["4_1_entry_id"].config(width=target_w)
     data_manager.widget_dic["4_1_entry_name"].config(width=target_w)
@@ -156,6 +160,37 @@ def room_info_submit_button_hide():
         data_manager.widget_dic["4_1_entry_name"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_prof"].config(width=default_w)
         data_manager.widget_dic["4_1_entry_extrainfo"].config(width=default_w)
+
+def wp_edit_finish_submit():
+    name = data_manager.widget_dic["4_3_label_dropdown"].text
+    add_poi(name, data_manager.plan_path)
+    data_manager.widget_dic["4_3_screen_roomlist"].hide()
+
+def poi_select(self):
+    data_manager.widget_dic["4_3_label_dropdown"].config(text=self.text)
+
+def show_list():
+    room_list = get_room_list(data_manager.plan_path)
+    add_room_list = []
+    label_max_y = data_manager.ref_h * 0.543
+    print(label_max_y)
+    for i in range(len(room_list)):
+        if room_list[i] not in data_manager.widget_dic:
+            add_room_list.append(room_list[i])
+        elif data_manager.widget_geometry[room_list[i]]["y"] > label_max_y:
+            label_max_y = data_manager.widget_geometry[room_list[i]]["y"]
+
+    for i in range(len(add_room_list)):
+        data_manager.widget_dic[add_room_list[i]] = epw.Label(text=add_room_list[i], font=epw.SysFont(font="Calibri", font_size=30), screen=data_manager.room_list).bind("<RELEASE>", lambda self: poi_select(self))
+        data_manager.widget_geometry[add_room_list[i]] = {"x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 60, "y": label_max_y}
+        label_max_y += 50
+    update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
+    data_manager.widget_dic["4_3_screen_roomlist"].show()
+
+def edit_waypoint(name):
+    if not data_manager.new_line:
+        data_manager.widget_dic["4_3_screen_group"].show()
+    data_manager.wp_name = name
 
 def wp_newline():
     data_manager.widget_dic["4_012_label_statuscontent"].config(text="Neue Wegpunktlinie erstellen")
@@ -205,7 +240,7 @@ def scale_widgets(widget_dic, widget_geometry, wi):
 def update_ui(widget_dic, plan, plan_w, plan_h):
     screen_w, screen_h = data_manager.screen.get_size()
     plan_factor = min(screen_w * 0.40 / plan_w, screen_h * 0.50 / plan_h)
-    widget_dic["4_012_surface_plan"].config(surface=plan)
+    widget_dic["4_012_surface_plan"].config(frames=[plan])
     widget_dic["4_012_surface_plan"].place(x=screen_w * 0.30, y=screen_h * 0.25)
     widget_dic["4_012_surface_plan"].scale(plan_factor)
     wi = {  # window information
@@ -232,20 +267,21 @@ def draw_lines():
                 if data_manager.waypoint_list[wp]["line_ID"] == data_manager.waypoint_list[wp + 1]["line_ID"]:
                     pygame.draw.aaline(
                         surface=data_manager.screen, color=(207, 91, 25),
-                        start_pos=(data_manager.widget_geometry[data_manager.waypoint_list[wp]["name"]]["x"],
-                                   data_manager.widget_geometry[data_manager.waypoint_list[wp]["name"]]["y"]),
-                        end_pos=(data_manager.widget_geometry[data_manager.waypoint_list[wp + 1]["name"]]["x"],
-                                 data_manager.widget_geometry[data_manager.waypoint_list[wp + 1]["name"]]["y"]),
+                        start_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].width / 2,
+                                   data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].height / 2),
+                        end_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].width / 2,
+                                 data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].height / 2),
                         width=2)
             else:
                 if not data_manager.new_line: return
                 plan = get_widget_dic()["4_012_surface_plan"]
-                mx, my = pygame.mouse.get_pos()
+                update_gen_factor()
+                mx, my = pygame.mouse.get_pos()[0] * data_manager.gen_factor_w, pygame.mouse.get_pos()[1] * data_manager.gen_factor_h
                 if plan.x <= mx <= plan.x + plan.width and plan.y <= my <= plan.y + plan.height and data_manager.show_line:
                     pygame.draw.aaline(
                         surface=data_manager.screen, color=(207, 91, 25),
-                        start_pos=(data_manager.widget_geometry[data_manager.waypoint_list[wp]["name"]]["x"],
-                                   data_manager.widget_geometry[data_manager.waypoint_list[wp]["name"]]["y"]),
+                        start_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].width / 2,
+                                   data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].height / 2),
                         end_pos=(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]), width=2)
 
 epw.create_pygame_layer(draw_lines, 2000)
@@ -418,19 +454,42 @@ data_manager.widget_geometry = {
         "x": 60,
         "y": lambda wi: wi["screen_h"] * 0.4,
         "font_size": 30,
+    },
+    "4_3_label_title": {
+        "x": lambda wi: wi["screen_w"] * 0.85 - data_manager.widget_dic["4_3_label_title"].width // 2,
+        "y": lambda wi: wi["screen_h"] * 0.25,
+        "font_size": 40,
+    },
+    "4_3_label_poi": {
+        "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 60,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30
+    },
+    "4_3_label_dropdown": {
+        "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 60,
+        "y": lambda wi: wi["screen_h"] * 0.5,
+        "font_size": 30,
+        "min_width": lambda wi: 500
+    },
+    "4_3_button_accept": {
+        "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 600,
+        "y": lambda wi: wi["screen_h"] * 0.5,
+        "font_size": 30
     }
 }
-
 def create_widgets(plan):
     data_manager.room_creation_screen = epw.Screen(visible=True)
     data_manager.room_info_screen = epw.Screen(visible=False)
     data_manager.waypoint_creation_screen = epw.Screen(visible=False)
+    data_manager.waypoint_edit_screen = epw.Screen(visible=False)
+    data_manager.room_list = epw.Screen(visible=True)
 
     widget_dic = {
         "4_0_screen_group": data_manager.room_creation_screen,
         "4_1_screen_group": data_manager.room_info_screen,
         "4_2_screen_group": data_manager.waypoint_creation_screen,
-        "4_012_surface_plan": epw.Surface(plan),
+        "4_3_screen_group": data_manager.waypoint_edit_screen,
+        "4_012_surface_plan": epw.Surface(frames=[plan]),
         "4_012_label_maintitle": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
         "4_012_label_statustitle": epw.Label(text="Status", font=epw.SysFont(font="Calibri", font_size=40, bold=True), alignment_spacing=0, alignment="left"),
         "4_012_label_statuscontent": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15),
@@ -462,6 +521,11 @@ def create_widgets(plan):
         "4_1_label_starinfo": epw.Label(text="* max. eine Angabe\n** optionale Angabe", font=epw.SysFont(font="Calibri", font_size=20), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
         "4_2_label_createtitle": epw.Label(text="Wegpunkterstellung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_creation_screen),
         "4_2_button_newline": epw.Button(text="Neue Wegpunktlinie", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline, screen=data_manager.waypoint_creation_screen),
+        "4_3_label_title": epw.Label(text="Wegpunktbearbeitung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_edit_screen),
+        "4_3_label_poi": epw.Label(text="Zielort", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.waypoint_edit_screen),
+        "4_3_label_dropdown": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.waypoint_edit_screen).bind("<RELEASE>", show_list),
+        "4_3_button_accept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=wp_edit_finish_submit, screen=data_manager.waypoint_edit_screen),
+        "4_3_screen_roomlist": data_manager.room_list
     }
     return widget_dic
 
