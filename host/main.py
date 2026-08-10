@@ -76,7 +76,7 @@ while running:
                     data_manager.waypoint_id += 1
                     widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {w_x}, {w_y} wurde hinzugefügt.")
 
-                    w_name = f"{floor_name()}_{w_x},{w_y}"
+                    w_name = f"{floor_name(data_manager.plan_path)}_{w_x},{w_y}"
                     update_gen_factor()
                     info = {
                         "x": pos[0] / data_manager.gen_factor_w,
