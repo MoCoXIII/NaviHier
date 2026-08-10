@@ -1,7 +1,12 @@
 @echo off
 
 echo Um den Server zu stoppen, bitte das Batch Script beenden oder das Fenster/Tab schließen.
-echo NaviHier Server starten...
+echo Der NaviHier Server wird lokal auf dieser Maschine unter http://127.0.0.1:8080/ erreichbar sein.
+echo Um auf ihn im lokalen Netzwerk zuzugreifen,
+echo ist die IP-Adresse dieser Maschine via ipconfig zu ermitteln und statt 127.0.0.1 zu verwenden.
+choice /m "Soll ipconfig die lokale IP-Adresse dieser Maschine anzeigen?"
+if %ERRORLEVEL%==1 ipconfig
+echo Starten des NaviHier Servers...
 
 : run
 call node index.js
