@@ -5,6 +5,10 @@ echo NaviHier Server starten...
 
 : run
 call node index.js
+:: npm install ruft ein anderes Script auf.
+:: dieses Script wird dadurch beendet.
+:: das Stichwort call umgeht dieses Problem.
+:: daher sitzt call vor allen node und npm Befehlen
 call npm install
 call node index.js
 net session || (
