@@ -7,7 +7,7 @@ import easypygamewidgets as epw
 import customtkinter
 import ctypes
 import data_manager
-from json_manager import save_data, get_room_list, add_poi
+from json_manager import save_data, get_room_list, add_poi, get_waypoint_list
 
 def plan_selection():
     print("Wähle den Gebäudeplan aus")
@@ -57,6 +57,24 @@ def waypoint_selected():
         data_manager.widget_dic["4_0_screen_group"].hide()
         data_manager.widget_dic["4_2_screen_group"].show()
 
+        waypoint_asset = pygame.image.load("assets/waypoint.png")
+        wp_list = get_waypoint_list()
+        scale = update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
+        for name, inf in wp_list.items():
+            data_manager.widget_dic[name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=name: edit_waypoint(name))
+            data_manager.widget_dic[name].scale(0.02, 1)
+            data_manager.widget_geometry[name] = {
+                "x": lambda wi, x=inf[0]: wi["plan_start_x"] + x * wi["plan_factor"],
+                "y": lambda wi, y=inf[1]: wi["plan_start_y"] + y * wi["plan_factor"]
+            }
+            data_manager.waypoint_list.append(
+                {
+                    "name": name,
+                    "line_ID": inf[2],
+                    "waypoint_ID": inf[3]
+                }
+            )
+        update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
 
 def screenwidth_percent(value):
     return data_manager.screen.get_width() * value

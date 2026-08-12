@@ -79,8 +79,8 @@ while running:
                     w_name = f"{floor_name(data_manager.plan_path)}_{w_x},{w_y}"
                     update_gen_factor()
                     info = {
-                        "x": pos[0] / data_manager.gen_factor_w,
-                        "y": pos[1] / data_manager.gen_factor_h,
+                        "x": lambda wi, x=w_x: wi["plan_start_x"] + x * wi["plan_factor"],
+                        "y": lambda wi, y=w_y: wi["plan_start_y"] + y * wi["plan_factor"],
                     }
                     waypoint_list_data = {
                         "name": w_name,
@@ -89,9 +89,11 @@ while running:
                     }
                     json_data = {
                         "x": w_x,
-                        "y": w_y
+                        "y": w_y,
+                        "line_ID": data_manager.line_id,
+                        "waypoint_ID": data_manager.waypoint_id
                     }
-                    add_waypoint_json(json_data, w_name, data_manager.plan_path)
+                    add_waypoint_json(json_data, w_name)
                     data_manager.waypoint_list.append(waypoint_list_data)
                     data_manager.widget_geometry[w_name] = info
                     if len(data_manager.waypoint_list) >= 2 and data_manager.waypoint_list[-2]["line_ID"] == data_manager.waypoint_list[-1]["line_ID"]:
@@ -106,7 +108,7 @@ while running:
                     data_manager.widget_dic[w_name].place(x = pos[0], y = pos[1])
         
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
-            if data_manager.shape == 1 and data_manager.s_coords_count > 0:
+            if data_manager.shape == 1 and data_manager.s_coords_count > 0 and data_manager.widget_dic["4_0_screen_group"].visible:
                 widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {data_manager.s_coords[-2]}, {data_manager.s_coords[-1]} wurde entfernt.")
                 data_manager.s_coords.pop()
                 data_manager.s_coords.pop()

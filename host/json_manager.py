@@ -19,24 +19,25 @@ def json_path(plan_path):
 def add_room_json(data, name, plan_path):
     with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
-    current_data["rooms"][name] = data
+    current_data["poi"][name] = data
     with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)  
 
-def save_data(plan_path, shape, nr, name, prof, exrainf):
+def save_data(plan_path, shape, nr, name, prof, extrainf):
     room_nr = str(nr[0])
     data = {
+        "coords": data_manager.s_coords,
         "names": name,
         "prof": prof,
-        "exrainfo": exrainf
+        "extrainfo": extrainf
         }
     add_room_json(data, room_nr, plan_path)
 
-def add_waypoint_json(data, name, plan_path):
-    with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
+def add_waypoint_json(data, name):
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     current_data["waypoints"][name] = data
-    with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
 def del_waypoint_json(plan_path):
@@ -64,20 +65,29 @@ def get_room_list(plan_path):
     with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     room_list = []
-    for room in current_data["rooms"].keys():
+    for room in current_data["poi"].keys():
         room_list.append(room)
     return room_list
 
 def get_room_names(name):
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
-    name_list = current_data["rooms"][name]["names"].copy()
+    name_list = current_data["poi"][name]["names"].copy()
     return name_list
 
 def add_poi(poi_name, plan_path):
     with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     current_data["waypoints"][data_manager.wp_name]["poi"] = poi_name
-    current_data["poi"][poi_name] = get_room_names(poi_name)
+    current_data["poi"][poi_name] = {}
+    current_data["poi"][poi_name]["names"] = get_room_names(poi_name)
     with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
+
+def get_waypoint_list():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    wp_list = {}
+    for name, wp in current_data["waypoints"].items():
+        wp_list[name] = [wp["x"], wp["y"], wp["line_ID"], wp["waypoint_ID"]]
+    return wp_list
