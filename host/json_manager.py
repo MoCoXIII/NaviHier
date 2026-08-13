@@ -88,6 +88,17 @@ def get_waypoint_list():
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     wp_list = {}
+    max_line_ID = 0
     for name, wp in current_data["waypoints"].items():
-        wp_list[name] = [wp["x"], wp["y"], wp["line_ID"], wp["waypoint_ID"]]
+        wp_list[name] = [wp["x"], wp["y"], wp["line_ID"]]
+        if wp["line_ID"] > max_line_ID:
+            max_line_ID = wp["line_ID"]
+    data_manager.line_id = max_line_ID
     return wp_list
+
+def get_connection_list():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    connection_list = current_data["connections"].copy()
+    print(connection_list)
+    return connection_list
