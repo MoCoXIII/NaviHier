@@ -1,0 +1,137 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Map JSON</title>
+</head>
+
+<body>
+    <img id="map" style="position: absolute; top: 0px; left: 0px;">
+    <svg id="svg" style="position: absolute; top: 0px; left: 0px;"></svg>
+    <script type="module">
+        const png = "./facilities/Gymnasium_Wernigerode/S-Gebäude/EG/plans/EG.png";
+        const jason = "./facilities/Gymnasium_Wernigerode/S-Gebäude/EG/EG.json";
+
+        const map = document.getElementById("map");
+        const svg = document.getElementById("svg");
+
+        map.src = png;
+
+        svg.style.width = `${map.naturalWidth}px`;
+        svg.style.height = `${map.naturalHeight}px`;
+
+        fetch(jason)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+
+                // Verbindungen zeichnen
+                for (let connection of data.connections) {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    const start = data.waypoints[connection.start];
+                    const end = data.waypoints[connection.end];
+
+                    if (!start || !end) {
+                        const existing = start ? start : end;
+                        if (!existing) continue;
+                        // draw notice that this connection is leaving the map
+                        // (at the existing waypoint)
+                        line.setAttribute("stroke", "green");
+                        line.setAttribute("stroke-width", "10");
+                        line.setAttribute("x1", existing.x);
+                        line.setAttribute("y1", existing.y - 5);
+                        line.setAttribute("x2", existing.x);
+                        line.setAttribute("y2", existing.y - 15);
+                        svg.appendChild(line);
+                    } else {
+                        line.setAttribute("stroke", "red");
+                        line.setAttribute("stroke-width", "2");
+                        line.setAttribute("x1", start.x);
+                        line.setAttribute("y1", start.y);
+                        line.setAttribute("x2", end.x);
+                        line.setAttribute("y2", end.y);
+                        svg.appendChild(line);
+                    }
+
+                    line.addEventListener("mouseenter", () => console.log(`"start": "${connection.start}",
+            "end": "${connection.end}"`));
+                }
+
+                // Wegpunkte zeichnen
+                for (let [waypointID, waypoint] of Object.entries(data.waypoints)) {
+                    const scale = 1;
+                    waypoint.x = waypoint.x * scale;
+                    waypoint.y = waypoint.y * scale;
+
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.id = waypointID;
+                    circle.setAttribute("fill", "red");
+                    circle.setAttribute("cx", waypoint.x);
+                    circle.setAttribute("cy", waypoint.y);
+                    circle.setAttribute("r", "5");
+                    svg.appendChild(circle);
+                    circle.addEventListener("mouseenter", () => console.log(waypointID));
+
+                    if (waypoint.poi) {
+                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        text.textContent = waypoint.poi;
+                        svg.appendChild(text);
+                        text.setAttribute("font-size", "11");
+                        text.setAttribute("font-weight", "bold");
+                        text.setAttribute("fill", "black");
+                        // text.setAttribute("stroke", "white");
+                        // text.setAttribute("stroke-width", "1");
+                        text.setAttribute("x", waypoint.x - text.getBBox().width / 2);
+                        text.setAttribute("y", waypoint.y - 10);
+
+                        // Nutzen von Hintergrundrechteck nach Stackoverflow-Frage
+                        // https://stackoverflow.com/questions/15500894/background-color-of-text-in-svg
+                        // und Antwort https://stackoverflow.com/a/16873128
+                        let SVGRect = text.getBBox();
+                        var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                        rect.setAttribute("x", SVGRect.x);
+                        rect.setAttribute("y", SVGRect.y);
+                        rect.setAttribute("width", SVGRect.width);
+                        rect.setAttribute("height", SVGRect.height);
+                        rect.setAttribute("fill", "white");
+                        svg.insertBefore(rect, text);
+                    }
+                }
+            });
+
+        svg.onclick = (e) => {
+            console.log(
+                `,
+"EG_${e.x},${e.y}": {
+    "x": ${e.x},
+    "y": ${e.y}
+}`);
+        };
+
+        // in traceback kann in jeder Zeile eine WaypointID stehen, deren waypoints auf der karte gesondert markiert werden sollen
+        // markierung für einen nach dem anderen aktivieren / deaktivieren mit d (aktivieren/nächster) und a (deaktivieren/vorheriger)
+        const traceback = ``.split("\n");
+        let i = 0;
+        document.addEventListener("keypress", (e) => {
+            if (e.key === "d") {
+                i++;
+                const max = traceback.length - 1;
+                i = max > i ? i : max;
+
+                let wp = svg.querySelector(`[id="${traceback[i]}"]`);
+                if (!wp) { console.log(traceback[i] + " not found on this map"); return; }
+                wp.setAttribute("fill", "blue");
+            } else if (e.key === "a") {
+                let wp = svg.querySelector(`[id="${traceback[i]}"]`);
+                if (!wp) { console.log(traceback[i] + " not found on this map"); return; }
+                wp.setAttribute("fill", "red");
+
+                i--;
+                i = 0 < i ? i : 0;
+            }
+        });
+    </script>
+</body>
+
+</html>
