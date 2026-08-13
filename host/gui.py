@@ -7,7 +7,7 @@ import easypygamewidgets as epw
 import customtkinter
 import ctypes
 import data_manager
-from json_manager import save_data, get_room_list, add_poi, get_waypoint_list
+from json_manager import save_data, get_room_list, add_poi, get_waypoint_list, get_connection_list
 
 def plan_selection():
     print("Wähle den Gebäudeplan aus")
@@ -56,6 +56,7 @@ def waypoint_selected():
         data_manager.widget_dic["4_012_label_statuscontent"].config(text = "Waypoint Ausgewählt")
         data_manager.widget_dic["4_0_screen_group"].hide()
         data_manager.widget_dic["4_2_screen_group"].show()
+        data_manager.connections_list = get_connection_list()
 
         waypoint_asset = pygame.image.load("assets/waypoint.png")
         wp_list = get_waypoint_list()
@@ -71,7 +72,6 @@ def waypoint_selected():
                 {
                     "name": name,
                     "line_ID": inf[2],
-                    "waypoint_ID": inf[3]
                 }
             )
         update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
@@ -214,14 +214,13 @@ def wp_newline():
     data_manager.widget_dic["4_012_label_statuscontent"].config(text="Neue Wegpunktlinie erstellen")
     data_manager.new_line = True
     data_manager.line_id += 1
-    data_manager.waypoint_id = 0
 
 def scale_value_hor(value, wi):
     if callable(value):
         return value(wi)
     return value * wi["gen_factor_w"]
 
-def scale_value_ver(value, wi):#
+def scale_value_ver(value, wi):
     if callable(value):
         return value(wi)
     return value * wi["gen_factor_h"]
@@ -280,28 +279,22 @@ def update_ui(widget_dic, plan, plan_w, plan_h):
 
 def draw_lines():
     if data_manager.shape == 3:
-        for wp in range(len(data_manager.waypoint_list)):
-            if wp + 1 < len(data_manager.waypoint_list):
-                if data_manager.waypoint_list[wp]["line_ID"] == data_manager.waypoint_list[wp + 1]["line_ID"]:
-                    pygame.draw.aaline(
-                        surface=data_manager.screen, color=(207, 91, 25),
-                        start_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].width / 2,
-                                   data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].height / 2),
-                        end_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].width / 2,
-                                 data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp + 1]["name"]].height / 2),
-                        width=2)
-            else:
-                if not data_manager.new_line: return
-                plan = get_widget_dic()["4_012_surface_plan"]
-                update_gen_factor()
-                mx, my = pygame.mouse.get_pos()[0] * data_manager.gen_factor_w, pygame.mouse.get_pos()[1] * data_manager.gen_factor_h
-                if plan.x <= mx <= plan.x + plan.width and plan.y <= my <= plan.y + plan.height and data_manager.show_line:
-                    pygame.draw.aaline(
-                        surface=data_manager.screen, color=(207, 91, 25),
-                        start_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].width / 2,
-                                   data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].height / 2),
-                        end_pos=(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]), width=2)
-
+        for con in range(len(data_manager.connections_list)):
+            start = data_manager.connections_list[con]["start"]
+            end = data_manager.connections_list[con]["end"]
+            start_pos = (data_manager.widget_dic[start].x + data_manager.widget_dic[start].width // 2, data_manager.widget_dic[start].y + data_manager.widget_dic[start].height // 2)
+            end_pos = (data_manager.widget_dic[end].x + data_manager.widget_dic[end].width // 2, data_manager.widget_dic[end].y + data_manager.widget_dic[end].height // 2)
+            pygame.draw.aaline(surface=data_manager.screen, color=(207, 91, 25), start_pos=start_pos, end_pos=end_pos, width=2)
+        if data_manager.new_line and len(data_manager.waypoint_list) >= 1 and data_manager.waypoint_list[-1]["line_ID"] == data_manager.line_id:
+            mx, my = pygame.mouse.get_pos()
+            print("darf sein")
+            print(mx, my, data_manager.plan_start_x, data_manager.plan_start_y, data_manager.plan_start_x + data_manager.plan_w, data_manager.plan_start_y + data_manager.plan_h)
+            if data_manager.plan_start_x <= mx <= data_manager.plan_start_x + data_manager.plan_w and data_manager.plan_start_y <= my <= data_manager.plan_start_y + data_manager.plan_h:
+                print("im Plan")
+                pygame.draw.aaline(surface=data_manager.screen, color=(207, 91, 25), 
+                                   start_pos=(data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].width // 2, 
+                                              data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].height // 2), 
+                                   end_pos=(mx, my), width=2)
 epw.create_pygame_layer(draw_lines, 2000)
 
 data_manager.widget_geometry = {

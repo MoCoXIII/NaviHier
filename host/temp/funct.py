@@ -32,3 +32,16 @@ def save_data(plan_path,shape, nr, name, prof, exrainf):
     elif shape == 3:
         data = {}
     add_room_json(data, plan_path)
+
+
+    else:
+                    if not data_manager.new_line: return
+                    plan = get_widget_dic()["4_012_surface_plan"]
+                    update_gen_factor()
+                    mx, my = pygame.mouse.get_pos()[0] * data_manager.gen_factor_w, pygame.mouse.get_pos()[1] * data_manager.gen_factor_h
+                    if plan.x <= mx <= plan.x + plan.width and plan.y <= my <= plan.y + plan.height and data_manager.show_line:
+                        pygame.draw.aaline(
+                            surface=data_manager.screen, color=(207, 91, 25),
+                            start_pos=(data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].width / 2,
+                                       data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[wp]["name"]].height / 2),
+                            end_pos=(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]), width=2)

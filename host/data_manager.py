@@ -24,9 +24,9 @@ waypoint_list = []
 new_line = False
 show_line = True
 line_id = 0
-waypoint_id = 0
 poi = False
 wp_name = ""
+connections_list = []
 
 id_answer_list = []
 name_answer_list = []

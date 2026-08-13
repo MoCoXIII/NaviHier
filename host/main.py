@@ -73,7 +73,6 @@ while running:
                     data_manager.w_coords.append(w_x)
                     data_manager.w_coords.append(w_y)
                     data_manager.w_coords_count += 1
-                    data_manager.waypoint_id += 1
                     widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {w_x}, {w_y} wurde hinzugefügt.")
 
                     w_name = f"{floor_name(data_manager.plan_path)}_{w_x},{w_y}"
@@ -85,13 +84,11 @@ while running:
                     waypoint_list_data = {
                         "name": w_name,
                         "line_ID": data_manager.line_id,
-                        "waypoint_ID": data_manager.waypoint_id
                     }
                     json_data = {
                         "x": w_x,
                         "y": w_y,
-                        "line_ID": data_manager.line_id,
-                        "waypoint_ID": data_manager.waypoint_id
+                        "line_ID": data_manager.line_id
                     }
                     add_waypoint_json(json_data, w_name)
                     data_manager.waypoint_list.append(waypoint_list_data)
@@ -102,6 +99,8 @@ while running:
                                 "end": data_manager.waypoint_list[-1]["name"]
                             }
                         add_connection_json(data, data_manager.plan_path)
+                        data_manager.connections_list.append(data)
+                        print(data_manager.connections_list)
                     waypoint_asset = pygame.image.load("assets/waypoint.png")
                     data_manager.widget_dic[w_name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=w_name: edit_waypoint(name))
                     data_manager.widget_dic[w_name].scale(0.02, 1)
