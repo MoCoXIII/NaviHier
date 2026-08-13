@@ -110,6 +110,32 @@ for (let [facilityName, facilityData] of Object.entries(facilities)) {
         locationData.waypoints[waypointID] = waypoint;
       }
     }
+    
+    // nun, da alle Wegpunkte dieses Standorts gesammelt sind, ist es sinnvoll zu prüfen,
+    // ob wirklich alle ihre Verbindungen auch auf existierende Wegpunkte zeigen.
+    // Eine fehlerhafte Verbindung kann das Pathfinding (aktuell, TODO: zu beheben) abstürzen lassen,
+    // indem es den angezielten Wegpunkt nicht findet und doch versucht auf ihn zuzugreifen.
+    // Diese Überprüfung dient zudem als Hinweis, falls in der Erstellung Fehler aufgetreten sind.
+    for (let [waypointID, waypoint] of Object.entries(locationData.waypoints)) {
+      for (let connection of waypoint.connections) {
+        let otherWaypoint = null;
+        let supposedName = null;
+        if (locationData.waypoints[connection.start].id === waypointID) {
+          otherWaypoint = locationData.waypoints[connection.end];
+          supposedName = connection.end;
+        } else {
+          otherWaypoint = locationData.waypoints[connection.start];
+          supposedName = connection.start;
+        }
+        if (!otherWaypoint) {
+          console.warn(`WARNUNG: Wegpunkt '${supposedName}' existiert nicht im Standort '${locationName}' von Einrichtung '${facilityName}'.
+Er wird jedoch in folgender Verbindung erwähnt:
+            "start": "${connection.start}",
+            "end": "${connection.end}"
+`);
+        }
+      }
+    }
   }
 }
 
@@ -204,8 +230,9 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
     // start oder ziel = { type: "POI", name: "..." } oder { type: "exit" }
 
     // ersten Wegpunkt finden, der zum start-POI gehört
-    start = Object.values(allWaypoints).find(waypoint => waypoint.poi === start.name);
     // für destination ist dies nicht nötig, da die Wegfindung auf den frühstmöglich passenden Punkt optimieren kann
+    start = Object.values(allWaypoints).find(waypoint => waypoint.poi === start.name);
+    start.distanceToHere = 0;
 
     let waypointsToCheck = [start];
 
