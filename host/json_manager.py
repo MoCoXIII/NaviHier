@@ -47,18 +47,18 @@ def del_waypoint_json(plan_path):
     with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
-def add_connection_json(data, plan_path):
-    with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
+def add_connection_json(data):
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     current_data["connections"].append(data)
-    with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
-def del_connection_json(plan_path):
-    with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
+def del_connection_json(index):
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
-    current_data["connections"].pop()
-    with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
+    current_data["connections"].pop(index)
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
 def get_room_list(plan_path):
@@ -88,17 +88,12 @@ def get_waypoint_list():
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     wp_list = {}
-    max_line_ID = 0
     for name, wp in current_data["waypoints"].items():
-        wp_list[name] = [wp["x"], wp["y"], wp["line_ID"]]
-        if wp["line_ID"] > max_line_ID:
-            max_line_ID = wp["line_ID"]
-    data_manager.line_id = max_line_ID
+        wp_list[name] = [wp["x"], wp["y"]]
     return wp_list
 
 def get_connection_list():
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
     connection_list = current_data["connections"].copy()
-    print(connection_list)
     return connection_list

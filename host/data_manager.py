@@ -23,10 +23,11 @@ shape = 0
 waypoint_list = []
 new_line = False
 show_line = True
-line_id = 0
 poi = False
 wp_name = ""
 connections_list = []
+last_wp = ""
+next_wp = ""
 
 id_answer_list = []
 name_answer_list = []

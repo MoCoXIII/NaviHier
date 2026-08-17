@@ -5,7 +5,7 @@
 import pygame
 import easypygamewidgets as epw
 import data_manager
-from gui import window_create, plan_create, get_widget_dic, update_ui, update_gen_factor, edit_waypoint
+from gui import window_create, plan_create, get_widget_dic, update_ui, update_gen_factor, click_waypoint
 from json_manager import floor_name, add_waypoint_json, del_waypoint_json, add_connection_json, del_connection_json
 
 pygame.init()
@@ -81,28 +81,24 @@ while running:
                         "x": lambda wi, x=w_x: wi["plan_start_x"] + x * wi["plan_factor"],
                         "y": lambda wi, y=w_y: wi["plan_start_y"] + y * wi["plan_factor"],
                     }
-                    waypoint_list_data = {
-                        "name": w_name,
-                        "line_ID": data_manager.line_id,
-                    }
                     json_data = {
                         "x": w_x,
-                        "y": w_y,
-                        "line_ID": data_manager.line_id
+                        "y": w_y
                     }
                     add_waypoint_json(json_data, w_name)
-                    data_manager.waypoint_list.append(waypoint_list_data)
+                    data_manager.waypoint_list.append(w_name)
                     data_manager.widget_geometry[w_name] = info
-                    if len(data_manager.waypoint_list) >= 2 and data_manager.waypoint_list[-2]["line_ID"] == data_manager.waypoint_list[-1]["line_ID"]:
-                        data = {
-                                "start": data_manager.waypoint_list[-2]["name"],
-                                "end": data_manager.waypoint_list[-1]["name"]
-                            }
-                        add_connection_json(data, data_manager.plan_path)
-                        data_manager.connections_list.append(data)
-                        print(data_manager.connections_list)
+                    if data_manager.last_wp != "" and data_manager.next_wp == "":
+                        connections_list_data = {
+                            "start": data_manager.last_wp,
+                            "end": w_name
+                        }
+                        add_connection_json(connections_list_data)
+                        data_manager.connections_list.append(connections_list_data)
+                        data_manager.last_wp = w_name
+                        data_manager.next_wp = ""
                     waypoint_asset = pygame.image.load("assets/waypoint.png")
-                    data_manager.widget_dic[w_name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=w_name: edit_waypoint(name))
+                    data_manager.widget_dic[w_name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=w_name: click_waypoint(name))
                     data_manager.widget_dic[w_name].scale(0.02, 1)
                     data_manager.widget_dic[w_name].place(x = pos[0], y = pos[1])
         
@@ -122,15 +118,20 @@ while running:
             
             if data_manager.shape == 3 and data_manager.w_coords_count > 0:
                 widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {data_manager.w_coords[-2]}, {data_manager.w_coords[-1]} wurde entfernt.")
+                wp = data_manager.waypoint_list[-1]
+                for i in range(len(data_manager.connections_list)):
+                    if data_manager.connections_list[i]["start"] == wp or data_manager.connections_list[i]["end"] == wp:
+                        data_manager.connections_list.pop(i)
+                        del_connection_json(i)
                 data_manager.w_coords.pop()
                 data_manager.w_coords.pop()
                 data_manager.w_coords_count -= 1
-                data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].delete()
+                data_manager.widget_dic[data_manager.waypoint_list[-1]].delete()
                 data_manager.waypoint_list.pop()
                 data_manager.widget_dic.popitem()
                 data_manager.widget_geometry.popitem()
                 del_waypoint_json(data_manager.plan_path)
-                del_connection_json(data_manager.plan_path)
+                
 
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and data_manager.shape in (1, 2, 3) and data_manager.widget_dic["4_0_screen_group"].visible:
             data_manager.s_coords.clear()

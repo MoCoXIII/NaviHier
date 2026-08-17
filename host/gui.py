@@ -62,18 +62,13 @@ def waypoint_selected():
         wp_list = get_waypoint_list()
         scale = update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
         for name, inf in wp_list.items():
-            data_manager.widget_dic[name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=name: edit_waypoint(name))
+            data_manager.widget_dic[name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=name: click_waypoint(name))
             data_manager.widget_dic[name].scale(0.02, 1)
             data_manager.widget_geometry[name] = {
                 "x": lambda wi, x=inf[0]: wi["plan_start_x"] + x * wi["plan_factor"],
                 "y": lambda wi, y=inf[1]: wi["plan_start_y"] + y * wi["plan_factor"]
             }
-            data_manager.waypoint_list.append(
-                {
-                    "name": name,
-                    "line_ID": inf[2],
-                }
-            )
+            data_manager.waypoint_list.append(name)
         update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
 
 def screenwidth_percent(value):
@@ -191,7 +186,6 @@ def show_list():
     room_list = get_room_list(data_manager.plan_path)
     add_room_list = []
     label_max_y = data_manager.ref_h * 0.543
-    print(label_max_y)
     for i in range(len(room_list)):
         if room_list[i] not in data_manager.widget_dic:
             add_room_list.append(room_list[i])
@@ -205,15 +199,18 @@ def show_list():
     update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
     data_manager.widget_dic["4_3_screen_roomlist"].show()
 
-def edit_waypoint(name):
-    if not data_manager.new_line:
+def click_waypoint(name):
+    print("geklickt")
+    if data_manager.new_line:
+        data_manager.last_wp = name
+    else: 
         data_manager.widget_dic["4_3_screen_group"].show()
     data_manager.wp_name = name
 
 def wp_newline():
     data_manager.widget_dic["4_012_label_statuscontent"].config(text="Neue Wegpunktlinie erstellen")
     data_manager.new_line = True
-    data_manager.line_id += 1
+    data_manager.last_wp = ""
 
 def scale_value_hor(value, wi):
     if callable(value):
@@ -285,15 +282,12 @@ def draw_lines():
             start_pos = (data_manager.widget_dic[start].x + data_manager.widget_dic[start].width // 2, data_manager.widget_dic[start].y + data_manager.widget_dic[start].height // 2)
             end_pos = (data_manager.widget_dic[end].x + data_manager.widget_dic[end].width // 2, data_manager.widget_dic[end].y + data_manager.widget_dic[end].height // 2)
             pygame.draw.aaline(surface=data_manager.screen, color=(207, 91, 25), start_pos=start_pos, end_pos=end_pos, width=2)
-        if data_manager.new_line and len(data_manager.waypoint_list) >= 1 and data_manager.waypoint_list[-1]["line_ID"] == data_manager.line_id:
+        if data_manager.new_line and len(data_manager.waypoint_list) >= 1 and data_manager.last_wp != "":
             mx, my = pygame.mouse.get_pos()
-            print("darf sein")
-            print(mx, my, data_manager.plan_start_x, data_manager.plan_start_y, data_manager.plan_start_x + data_manager.plan_w, data_manager.plan_start_y + data_manager.plan_h)
             if data_manager.plan_start_x <= mx <= data_manager.plan_start_x + data_manager.plan_w and data_manager.plan_start_y <= my <= data_manager.plan_start_y + data_manager.plan_h:
-                print("im Plan")
                 pygame.draw.aaline(surface=data_manager.screen, color=(207, 91, 25), 
-                                   start_pos=(data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].x + data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].width // 2, 
-                                              data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].y + data_manager.widget_dic[data_manager.waypoint_list[-1]["name"]].height // 2), 
+                                   start_pos=(data_manager.widget_dic[data_manager.waypoint_list[-1]].x + data_manager.widget_dic[data_manager.waypoint_list[-1]].width // 2, 
+                                              data_manager.widget_dic[data_manager.waypoint_list[-1]].y + data_manager.widget_dic[data_manager.waypoint_list[-1]].height // 2), 
                                    end_pos=(mx, my), width=2)
 epw.create_pygame_layer(draw_lines, 2000)
 
