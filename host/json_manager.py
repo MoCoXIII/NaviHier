@@ -84,6 +84,14 @@ def add_poi(poi_name, plan_path):
     with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
+def del_poi():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    try: del current_data["waypoints"][data_manager.wp_name]["poi"]
+    except: pass
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
+        json.dump(current_data, file, indent=4, ensure_ascii=False)
+
 def get_waypoint_list():
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)

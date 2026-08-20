@@ -7,7 +7,7 @@ import easypygamewidgets as epw
 import customtkinter
 import ctypes
 import data_manager
-from json_manager import save_data, get_room_list, add_poi, get_waypoint_list, get_connection_list, del_connection_json, del_waypoint_json, add_connection_json
+from json_manager import *
 
 def plan_selection():
     print("Wähle den Gebäudeplan aus")
@@ -179,6 +179,18 @@ def wp_edit_finish_submit():
     add_poi(name, data_manager.plan_path)
     data_manager.widget_dic["4_3_screen_roomlist"].hide()
 
+def check_poi():
+    data_manager.widget_dic["4_3_screen_group2"].show()
+
+def uncheck_poi():
+    data_manager.widget_dic["4_3_screen_group2"].hide()
+    del_poi()
+
+#def check_stairswp():
+
+#def uncheck_stairswp():
+
+
 def poi_select(self):
     data_manager.widget_dic["4_3_label_dropdown"].config(text=self.text)
 
@@ -246,11 +258,13 @@ def click_waypoint(name):
                 add = True
         else: 
             data_manager.widget_dic["4_3_screen_group"].show()
+            data_manager.widget_dic["4_3_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_name}")
 
 def wp_newline():
     data_manager.widget_dic["4_012_label_statuscontent"].config(text="Wegpunktbearbeitung")
     data_manager.widget_dic["4_2_button_newline"].config(state="disabled")
     data_manager.widget_dic["4_2_button_newlinecan"].config(state="enabled")
+    data_manager.widget_dic["4_3_screen_group"].hide()
     data_manager.new_line = True
     data_manager.last_wp = ""
 def wp_newline_cancel():
@@ -517,16 +531,22 @@ data_manager.widget_geometry = {
         "y": lambda wi: wi["screen_h"] * 0.25,
         "font_size": 40,
     },
-    "4_3_label_poi": {
+    "4_3_label_waypoint": {
+        "x": lambda wi: wi["screen_w"] * 0.85 - data_manager.widget_dic["4_3_label_waypoint"].width // 2,
+        "y": lambda wi: wi["screen_h"] * 0.3,
+        "font_size": 30,
+    },
+    "4_3_checkbox_poi": {
         "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 60,
         "y": lambda wi: wi["screen_h"] * 0.4,
-        "font_size": 30
+        "font_size": 30,
+        "min_width": 155
     },
     "4_3_label_dropdown": {
         "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 60,
         "y": lambda wi: wi["screen_h"] * 0.5,
         "font_size": 30,
-        "min_width": lambda wi: 500
+        "min_width": 500
     },
     "4_3_button_accept": {
         "x": lambda wi: wi["plan_start_x"] + wi["plan_w"] + 600,
@@ -540,12 +560,16 @@ def create_widgets(plan):
     data_manager.waypoint_creation_screen = epw.Screen(visible=False)
     data_manager.waypoint_edit_screen = epw.Screen(visible=False)
     data_manager.room_list = epw.Screen(visible=True)
+    data_manager.poi_widgets = epw.Screen(visible=False)
+    data_manager.stairs_widgets = epw.Screen(visible=False)
 
     widget_dic = {
         "4_0_screen_group": data_manager.room_creation_screen,
         "4_1_screen_group": data_manager.room_info_screen,
         "4_2_screen_group": data_manager.waypoint_creation_screen,
         "4_3_screen_group": data_manager.waypoint_edit_screen,
+        "4_3_screen_group2": data_manager.poi_widgets,
+        "4_3_screen_group3": data_manager.stairs_widgets,
         "4_012_surface_plan": epw.Surface(frames=[plan]),
         "4_012_label_maintitle": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
         "4_012_label_statustitle": epw.Label(text="Status", font=epw.SysFont(font="Calibri", font_size=40, bold=True), alignment_spacing=0, alignment="left"),
@@ -578,12 +602,14 @@ def create_widgets(plan):
         "4_1_label_starinfo": epw.Label(text="* max. eine Angabe\n** optionale Angabe", font=epw.SysFont(font="Calibri", font_size=20), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
         "4_2_label_createtitle": epw.Label(text="Wegpunkterstellung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_creation_screen),
         "4_2_button_newline": epw.Button(text="Wegpunktbearbeitung", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline, screen=data_manager.waypoint_creation_screen),
-        "4_2_button_newlinecan": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline_cancel, screen=data_manager.waypoint_creation_screen),
+        "4_2_button_newlinecan": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline_cancel, state="disabled", screen=data_manager.waypoint_creation_screen),
         "4_3_label_title": epw.Label(text="Wegpunktbearbeitung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_edit_screen),
-        "4_3_label_poi": epw.Label(text="Zielort", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.waypoint_edit_screen),
-        "4_3_label_dropdown": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.waypoint_edit_screen).bind("<RELEASE>", show_list),
-        "4_3_button_accept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=wp_edit_finish_submit, screen=data_manager.waypoint_edit_screen),
-        "4_3_screen_roomlist": data_manager.room_list
+        "4_3_label_waypoint": epw.Label(text=f"Wegpunkt:", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", screen=data_manager.waypoint_edit_screen),
+        "4_3_checkbox_poi": epw.Checkbox(text="Zielort", font=epw.SysFont(font="Calibri", font_size=30), check_command=check_poi, uncheck_command=uncheck_poi, alignment="left", screen=data_manager.waypoint_edit_screen),
+        "4_3_label_dropdown": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.poi_widgets).bind("<RELEASE>", show_list),
+        "4_3_button_accept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=wp_edit_finish_submit, screen=data_manager.poi_widgets),
+        "4_3_screen_roomlist": data_manager.room_list,
+        #"4_3_checkbox_stairswp": epw.Checkbox(text="Treppenwegpunkt", font=epw.SysFont(font="Calibri", font_size=30), check_command=check_stairswp, uncheck_command=uncheck_stairswp, alignment="left", screen=data_manager.waypoint_edit_screen),
     }
     return widget_dic
 

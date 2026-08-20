@@ -14,6 +14,8 @@ plan_path = ""
 
 room_creation_screen = None
 room_info_screen = None
+poi_widgets = None
+stairs_widgets = None
 waypoint_attribute_select = None
 widget_geometry = {}
 widget_dic = {}
