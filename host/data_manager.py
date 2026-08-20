@@ -27,7 +27,6 @@ poi = False
 wp_name = ""
 connections_list = []
 last_wp = ""
-next_wp = ""
 
 id_answer_list = []
 name_answer_list = []
@@ -35,6 +34,9 @@ prof_answer_list = []
 extrainfo_answer_list = []
 
 #### main.py
+l_clicked = False
+r_clicked = False
+
 plan_start_x = 0
 plan_start_y = 0
 

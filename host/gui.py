@@ -7,7 +7,7 @@ import easypygamewidgets as epw
 import customtkinter
 import ctypes
 import data_manager
-from json_manager import save_data, get_room_list, add_poi, get_waypoint_list, get_connection_list
+from json_manager import save_data, get_room_list, add_poi, get_waypoint_list, get_connection_list, del_connection_json, del_waypoint_json, add_connection_json
 
 def plan_selection():
     print("Wähle den Gebäudeplan aus")
@@ -199,18 +199,65 @@ def show_list():
     update_ui(data_manager.widget_dic, data_manager.plan, data_manager.plan_w, data_manager.plan_h)
     data_manager.widget_dic["4_3_screen_roomlist"].show()
 
+def del_waypoint(wp, type):
+    del_con_list = [
+        con for con in data_manager.connections_list if con["start"] == wp or con["end"] == wp
+    ]
+    for con in del_con_list:
+        del_connection_json(con)
+        data_manager.connections_list.remove(con)
+    if data_manager.w_coords_count > 1:
+        data_manager.w_coords.pop()
+        data_manager.w_coords.pop()
+    data_manager.w_coords_count -= 1
+    data_manager.widget_dic[wp].delete()
+    data_manager.waypoint_list.remove(wp)
+    if type == 0:
+        if len(data_manager.waypoint_list) > 0:
+            data_manager.last_wp = data_manager.waypoint_list[-1]
+        else:
+            data_manager.last_wp = ""
+    elif type == 1:
+        data_manager.last_wp = ""
+    del data_manager.widget_dic[wp]
+    del data_manager.widget_geometry[wp]
+    del_waypoint_json(wp)
+
 def click_waypoint(name):
-    print("geklickt")
-    if data_manager.new_line:
-        data_manager.last_wp = name
-    else: 
-        data_manager.widget_dic["4_3_screen_group"].show()
     data_manager.wp_name = name
+    if not data_manager.r_clicked:
+        add = True
+        if data_manager.new_line:
+            if data_manager.last_wp == "":
+                data_manager.last_wp = name
+            else:
+                data = {
+                    "start": data_manager.last_wp,
+                    "end": name
+                }
+                for con in data_manager.connections_list:
+                    if (con["start"] == data["start"] and con["end"] == data["end"]) or (con["start"] == data["end"] and con["end"] == data["start"]):
+                        add = False
+                        break
+                if add:
+                    add_connection_json(data)
+                    data_manager.connections_list.append(data)
+                data_manager.last_wp = name
+                add = True
+        else: 
+            data_manager.widget_dic["4_3_screen_group"].show()
 
 def wp_newline():
-    data_manager.widget_dic["4_012_label_statuscontent"].config(text="Neue Wegpunktlinie erstellen")
+    data_manager.widget_dic["4_012_label_statuscontent"].config(text="Wegpunktbearbeitung")
+    data_manager.widget_dic["4_2_button_newline"].config(state="disabled")
+    data_manager.widget_dic["4_2_button_newlinecan"].config(state="enabled")
     data_manager.new_line = True
     data_manager.last_wp = ""
+def wp_newline_cancel():
+    data_manager.widget_dic["4_012_label_statuscontent"].config(text="Wegpunktbearbeitung abgebrochen")
+    data_manager.widget_dic["4_2_button_newline"].config(state="enabled")
+    data_manager.widget_dic["4_2_button_newlinecan"].config(state="disabled")
+    data_manager.new_line = False
 
 def scale_value_hor(value, wi):
     if callable(value):
@@ -286,8 +333,8 @@ def draw_lines():
             mx, my = pygame.mouse.get_pos()
             if data_manager.plan_start_x <= mx <= data_manager.plan_start_x + data_manager.plan_w and data_manager.plan_start_y <= my <= data_manager.plan_start_y + data_manager.plan_h:
                 pygame.draw.aaline(surface=data_manager.screen, color=(207, 91, 25), 
-                                   start_pos=(data_manager.widget_dic[data_manager.waypoint_list[-1]].x + data_manager.widget_dic[data_manager.waypoint_list[-1]].width // 2, 
-                                              data_manager.widget_dic[data_manager.waypoint_list[-1]].y + data_manager.widget_dic[data_manager.waypoint_list[-1]].height // 2), 
+                                   start_pos=(data_manager.widget_dic[data_manager.last_wp].x + data_manager.widget_dic[data_manager.last_wp].width // 2, 
+                                              data_manager.widget_dic[data_manager.last_wp].y + data_manager.widget_dic[data_manager.last_wp].height // 2), 
                                    end_pos=(mx, my), width=2)
 epw.create_pygame_layer(draw_lines, 2000)
 
@@ -460,6 +507,11 @@ data_manager.widget_geometry = {
         "y": lambda wi: wi["screen_h"] * 0.4,
         "font_size": 30,
     },
+    "4_2_button_newlinecan": {
+        "x": 400,
+        "y": lambda wi: wi["screen_h"] * 0.4,
+        "font_size": 30,
+    },
     "4_3_label_title": {
         "x": lambda wi: wi["screen_w"] * 0.85 - data_manager.widget_dic["4_3_label_title"].width // 2,
         "y": lambda wi: wi["screen_h"] * 0.25,
@@ -525,7 +577,8 @@ def create_widgets(plan):
         "4_1_button_finishcan": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command=room_create_finish_cancel, screen=data_manager.room_info_screen),
         "4_1_label_starinfo": epw.Label(text="* max. eine Angabe\n** optionale Angabe", font=epw.SysFont(font="Calibri", font_size=20), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
         "4_2_label_createtitle": epw.Label(text="Wegpunkterstellung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_creation_screen),
-        "4_2_button_newline": epw.Button(text="Neue Wegpunktlinie", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline, screen=data_manager.waypoint_creation_screen),
+        "4_2_button_newline": epw.Button(text="Wegpunktbearbeitung", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline, screen=data_manager.waypoint_creation_screen),
+        "4_2_button_newlinecan": epw.Button(text="Abbrechen", font=epw.SysFont(font="Calibri", font_size=30), command=wp_newline_cancel, screen=data_manager.waypoint_creation_screen),
         "4_3_label_title": epw.Label(text="Wegpunktbearbeitung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.waypoint_edit_screen),
         "4_3_label_poi": epw.Label(text="Zielort", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.waypoint_edit_screen),
         "4_3_label_dropdown": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.waypoint_edit_screen).bind("<RELEASE>", show_list),

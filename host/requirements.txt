@@ -1,2 +1,1 @@
-customtkinter==6.0.0
-easypygamewidgets==26.33
+

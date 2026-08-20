@@ -40,11 +40,11 @@ def add_waypoint_json(data, name):
     with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
-def del_waypoint_json(plan_path):
-    with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
+def del_waypoint_json(wp):
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
-    current_data["waypoints"].popitem()
-    with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
+    del current_data["waypoints"][wp]
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
 def add_connection_json(data):
@@ -54,10 +54,10 @@ def add_connection_json(data):
     with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
-def del_connection_json(index):
+def del_connection_json(name):
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
-    current_data["connections"].pop(index)
+    current_data["connections"].remove(name)
     with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
