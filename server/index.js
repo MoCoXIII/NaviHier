@@ -175,6 +175,11 @@ app.get("/poi/{:facility{/:verification}}", (req, res) => {
 });
 
 app.get("/path/:start/:destination/{:facility}", (req, res) => {
+  console.log(`Angeforderter Link: ?s=${
+    encodeURIComponent(decodeURIComponent(req.params.start))
+  }&d=${
+    encodeURIComponent(decodeURIComponent(req.params.destination))
+  } in Einrichtung ${req.params.facility}`);
   const URIstart = decodeURIComponent(req.params.start);
   const URIdestination = decodeURIComponent(req.params.destination);
   let facilityName = decodeURIComponent(req.params.facility);
@@ -231,10 +236,10 @@ app.get("/path/:start/:destination/{:facility}", (req, res) => {
 
     // ersten Wegpunkt finden, der zum start-POI gehört
     // für destination ist dies nicht nötig, da die Wegfindung auf den frühstmöglich passenden Punkt optimieren kann
-    start = Object.values(allWaypoints).find(waypoint => waypoint.poi === start.name);
-    start.distanceToHere = 0;
+    let starts = Object.values(allWaypoints).filter(waypoint => waypoint.poi === start.name);
+    starts.forEach(waypoint => waypoint.distanceToHere = 0);
 
-    let waypointsToCheck = [start];
+    let waypointsToCheck = [...starts];
 
     while (waypointsToCheck.length > 0) {
       // wählt den nächsten Wegpunkt, indem .shift() das erste Element der Liste wiedergibt und entfernt
