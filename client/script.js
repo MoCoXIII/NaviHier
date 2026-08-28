@@ -64,6 +64,10 @@ function handleQRScan(resolve, reject) {
     const qrGroup = document.createElement('div');
     qrGroup.id = 'qr-group';
 
+    // const qrInfo = document.createElement('p');
+    // qrInfo.textContent = "Wenn der gescannte QR-Code auf eine Website hinweist, wird ihm automatisch gefolgt. Scannen Sie nur Codes, denen Sie vertrauen.";
+    // qrGroup.appendChild(qrInfo);
+
     const qrVideo = document.createElement('video');
     qrVideo.id = 'qr-video';
     qrVideo.autoplay = true;
@@ -77,11 +81,19 @@ function handleQRScan(resolve, reject) {
             scanner.stop();
             qrGroup.remove();
             const resultString = result.data;
-            if (resultString.startsWith('http')) {
+            if (resultString.toLowerCase().startsWith('http')) {
                 const url = new URL(resultString);  // nicht direkt URLSearchParams, da es mit ganzen URLs nicht umgehen kann
                 const urlParams = url.searchParams;
                 start = urlParams.get('s') || start;
                 destination = urlParams.get('d') || destination;
+
+                // Die gelesene URL könnte ein verkürzter Link sein,
+                // in dem die URL Parameter nicht enthalten sind.
+                // Dies ist zu unterstützen, damit QR-Codes kleiner sein können.
+                // Am einfachsten ist dann, der URL einfach zu folgen.
+                if (
+                    !start && !destination
+                ) window.location.href = resultString;
             } else if (resultString.startsWith('?')) {
                 const urlParams = new URLSearchParams(resultString);
                 start = urlParams.get('s') || start;
@@ -246,7 +258,18 @@ pathSetter.then(() => {  // start und destination erfolgreich festgelegt
             const nextLocation = locationsToWalk.next();
             if (nextLocation.done) {
                 // Weg komplett abgearbeitet
-                if (confirm("Das Ziel ist erreicht. Soll die Seite neu geladen werden?")) window.location.reload();
+
+                if (confirm("Das Ziel ist erreicht. Soll die Seite neu geladen werden?")) {
+                    // Wenn der Weg durch Query Parameter angegeben wurde,
+                    // würde .reload() diese Parameter ausgefüllt lassen.
+                    // Dem Nutzer soll die Möglichkeit gegeben werden,
+                    // diese Parameter entfernen zu lassen.
+                    if (window.location.search && confirm("Es sind möglicherweise feste Ziele in der URL angegeben. Sollen diese entfernt werden?")) {
+                        window.location.search = "";
+                    } else {
+                        window.location.reload();
+                    }
+                }
                 return;
             }
             if (typeof nextLocation.value === "string") {
