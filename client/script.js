@@ -4,7 +4,8 @@ const serverURL = window.location.origin + "/";
 
 // Wenn mehrere Einrichtungen auf dem Server gehostet werden, muss die Zieleinrichtung festgelegt werden
 // Wenn gesetzt, aber der Server nur eine Einrichtung hostet, wird der Parameter ignoriert
-const facility = "hs-harz";
+const global_url_params = new URLSearchParams(window.location.search);
+const facility = global_url_params.get('f') || "hs-harz";
 
 // Wenn zukünftig auch z.B. Passwörter zu bestimmten Einrichtungsdaten genutzt werden,
 // könnten diese über die 'verification' übermittelt werden (nicht implementiert)
