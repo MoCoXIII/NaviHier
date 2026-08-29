@@ -1,6 +1,8 @@
 import QrScanner from "https://nimiq.github.io/qr-scanner/qr-scanner.min.js";
 
-const serverURL = window.location.origin + "/";
+const serverURL = window.location.href
+    .replace(window.location.search, "")
+    .replace(window.location.hash, "");
 
 // Wenn mehrere Einrichtungen auf dem Server gehostet werden, muss die Zieleinrichtung festgelegt werden
 // Wenn gesetzt, aber der Server nur eine Einrichtung hostet, wird der Parameter ignoriert
