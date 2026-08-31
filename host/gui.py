@@ -137,11 +137,12 @@ def waypoint_selected():
         place_waypoints()
 
 def waypoint_edit_back():
+    data_manager.widget_dic["4_3_button_poiaccept"].config(visible = False)
     data_manager.widget_dic["4_2_screen_group"].hide()
     data_manager.widget_dic["4_3_screen_group"].hide()
     data_manager.widget_dic["4_3_screen_group2"].hide()
     data_manager.widget_dic["4_3_screen_group3"].hide()
-    data_manager.widget_dic["4_3_screen_grou4"].hide()
+    data_manager.widget_dic["4_3_screen_roomlist"].hide()
     data_manager.widget_dic["4_0_screen_group"].show()
     data_manager.last_wp = ""
     data_manager.shape = 0
@@ -201,6 +202,7 @@ def room_create_finish_submit():
 def room_create_submit():
     data_manager.widget_dic["4_0_screen_group"].hide()
     data_manager.widget_dic["4_1_screen_group"].show()
+    data_manager.widget_dic["4_1_button_infosub"].hide()
 
 def room_create_cancel():
     data_manager.shape = 0
@@ -241,14 +243,14 @@ def room_create_finish_cancel():
     data_manager.widget_dic["4_012_label_statuscontent"].config(text="Zurücksetzen der Raumerstellung")
 
 def show_4_1_button_infosub(info_type):
-    epw.schedule(delay_4_1_button_infosub, 1)
+    epw.schedule(delay_4_1_button_infosub, 1, unit="frames")
     btn_w = data_manager.widget_dic["4_1_button_infosub"].width
-    target_w = int(data_manager.res_w * - 60 - btn_w)
+    target_w = int(data_manager.res_w * 0.3 - 60 - btn_w)
     
     data_manager.widget_dic["4_1_entry_id"].config(width=target_w)
     data_manager.widget_dic["4_1_entry_name"].config(width=target_w)
     data_manager.widget_dic["4_1_entry_prof"].config(width=target_w)
-    data_manager.widget_dic["4_1_entry_extrainfo"].config(width=screenwidth_percent(0.3) - 120 - btn_w)
+    data_manager.widget_dic["4_1_entry_extrainfo"].config(width=target_w)
     
     if info_type == "id":
         data_manager.widget_dic["4_1_button_infosub"].place(x=target_w, y=data_manager.widget_dic["4_1_entry_id"].y)
@@ -327,6 +329,7 @@ def add_stairs_connection():
     data_manager.widget_dic["4_3_screen_group2"].show()
     data_manager.widget_dic["4_3_screen_group3"].show()
     data_manager.widget_dic["4_3_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_memory}")
+    data_manager.widget_dic["4_3_label_addstairs"].config(text=data_manager.wp_name)
 
 
 def poi_select(self):
@@ -633,7 +636,7 @@ def get_widget_geometry():
             "font_size": 40,
         },
         "4_3_label_waypoint": {
-            "x": data_manager.res_w * 0.85 - data_manager.widget_dic["4_3_label_waypoint"].width // 2,
+            "x": data_manager.res_w * 0.75,
             "y": data_manager.res_h * 0.3,
             "font_size": 30,
         },
@@ -650,8 +653,9 @@ def get_widget_geometry():
             "min_width": 450
         },
         "4_3_button_poiaccept": {
-            "x": data_manager.plan_start_x + data_manager.plan_w + 600,
+            "x": 1690,
             "y": data_manager.res_h * 0.7,
+            "height": data_manager.widget_dic["4_3_label_dropdown"].height,
             "font_size": 30
         },
         "4_3_button_stairs":{
