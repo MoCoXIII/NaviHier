@@ -20,6 +20,8 @@ data_manager.plan_start_x = data_manager.widget_dic["4_012_surface_plan"].x
 data_manager.plan_start_y = data_manager.widget_dic["4_012_surface_plan"].y
 place_widgets()
 
+print(data_manager.realplan_w, data_manager.realplan_h)
+print(data_manager.plan_w, data_manager.plan_h)
 first_run_second_plan = True
 running = True
 while running:
@@ -74,6 +76,7 @@ while running:
                 pos = pygame.mouse.get_pos()
                 p_x, p_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
                 if 0 <= p_x <= data_manager.plan_w and 0 <= p_y <= data_manager.plan_h:
+                    print(p_x, p_y)
                     data_manager.p_coords.append(p_x)
                     data_manager.p_coords.append(p_y)
                     data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")

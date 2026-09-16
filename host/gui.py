@@ -137,7 +137,6 @@ def waypoint_selected():
         place_waypoints()
 
 def waypoint_edit_back():
-    data_manager.widget_dic["4_3_button_poiaccept"].config(visible = False)
     data_manager.widget_dic["4_2_screen_group"].hide()
     data_manager.widget_dic["4_3_screen_group"].hide()
     data_manager.widget_dic["4_3_screen_group2"].hide()
@@ -655,7 +654,7 @@ def get_widget_geometry():
         "4_3_button_poiaccept": {
             "x": 1690,
             "y": data_manager.res_h * 0.7,
-            "height": data_manager.widget_dic["4_3_label_dropdown"].height,
+            "height": 57,
             "font_size": 30
         },
         "4_3_button_stairs":{
@@ -745,7 +744,7 @@ def create_widgets(plan):
         "4_3_label_waypoint": epw.Label(text=f"Wegpunkt:", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", screen=data_manager.waypoint_edit_screen),
         "4_3_button_poi": epw.Button(text="Zielort hinzufügen", font=epw.SysFont(font="Calibri", font_size=30), command=poi, alignment="left", screen=data_manager.waypoint_edit_screen),
         "4_3_label_dropdown": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.poi_widgets).bind("<RELEASE>", show_list),
-        "4_3_button_poiaccept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=poi_submit, screen=data_manager.poi_widgets),
+        "4_3_button_poiaccept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=poi_submit, auto_size=False, screen=data_manager.poi_widgets),
         "4_3_screen_roomlist": data_manager.room_list,
         "4_3_button_stairs": epw.Button(text="Treppenverbindung hinzufügen", font=epw.SysFont(font="Calibri", font_size=30), command=stairs, alignment="left", screen=data_manager.waypoint_edit_screen),
         "4_3_label_addstairs": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.stairs_widgets).bind("<RELEASE>", select_stairs, False),
