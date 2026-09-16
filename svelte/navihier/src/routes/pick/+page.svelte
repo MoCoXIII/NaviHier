@@ -6,16 +6,34 @@
 
   // TODO
   let { data } = $props();
-  let allPOI = $derived(data.allPOI);
-  
+  const allPOI = $derived(JSON.parse(data.allPOI));
+  // $inspect("allPOI", allPOI);
+
   let url = $derived($page.url);
-  let facility = $derived(url.searchParams.get("f") || "");
+  let facility = $derived(url.searchParams.get("f") || Object.keys(allPOI)[0]);
+  // $inspect("facility", facility);
   let start = $derived(url.searchParams.get("s") || "");
   let destination = $derived(url.searchParams.get("d") || "");
-  
-  let poi = $derived(allPOI[facility]);
+
+  function facpoi(facility) {
+    let facpoi = {};
+    const locations = allPOI[facility];
+    for (const [locationName, locationData] of Object.entries(locations)) {
+      let locpoi = {};
+      facpoi[locationName] = locpoi;
+      const locationGeo = locationData.location;
+      for (const [id, names] of Object.entries(locationData.poi)) {
+        locpoi[id] = names;
+      }
+    }
+    return facpoi;
+  }
+
+  let poi = $derived(facpoi(facility));
+  // $inspect("poi", poi);
 
   let qrVideo = $state();
+  // $inspect(qrVideo);
   let scanner = $state(null);
   let isScanning = $state(false);
 
@@ -88,7 +106,7 @@
     return choices;
   });
 
-  function navigateToRoute() {
+  function navigate() {
     if (!browser) return;
 
     const params = new URLSearchParams();
@@ -100,37 +118,35 @@
   }
 </script>
 
-<form onsubmit={navigateToRoute}>
-  <select
-    name="f"
-    bind:value={facility}
-    use:choicesAction={{ placeholder: "Select facility" }}
-  >
-    <option value="">Default</option>
-    <!-- TODO -->
+<form onsubmit={navigate}>
+  <select name="f" bind:value={facility} required>
+    {#each Object.keys(allPOI) as fac}
+      <option value={fac}>{fac}</option>
+    {/each}
   </select>
 
-  <select
-    name="s"
-    bind:value={start}
-    data-target="start"
-    use:choicesAction={{ value: start, placeholder: "Select start point" }}
-    required
-  ></select>
+  <select name="s" bind:value={start} required>
+    {#each Object.entries(poi) as [locname, locpoi]}
+      {#each Object.entries(locpoi) as [poiid, poinames]}
+        {#if poiid !== destination}
+          <option value={poiid}>{poinames.join(" / ")} ({locname})</option>
+        {/if}
+      {/each}
+    {/each}
+  </select>
 
-  <select
-    name="d"
-    bind:value={destination}
-    data-target="destination"
-    use:choicesAction={{
-      value: destination,
-      placeholder: "Select destination",
-    }}
-    required
-  ></select>
+  <select name="d" bind:value={destination} required>
+    {#each Object.entries(poi) as [locname, locpoi]}
+      {#each Object.entries(locpoi) as [poiid, poinames]}
+        {#if poiid !== start}
+          <option value={poiid}>{poinames.join(" / ")} ({locname})</option>
+        {/if}
+      {/each}
+    {/each}
+  </select>
 
   <button type="button" onclick={toggleScanner}>
-    {isScanning ? "Stop QR Scanner" : "Scan QR Code"}
+    {isScanning ? "QR Scanner stoppen" : "QR Code scannen"}
   </button>
 
   {#if isScanning}
