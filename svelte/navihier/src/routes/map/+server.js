@@ -5,7 +5,7 @@ import { facilities } from "$lib/server/facilities.js";
 const facilityNameList = Object.keys(facilities);
 
 export async function POST({ request }) {
-  const { mapName, locationName, facilityName } = await request.json();
+  let { mapName, locationName, facilityName } = await request.json();
 
   if (facilityNameList.length === 1) {
     facilityName = facilityNameList[0];
