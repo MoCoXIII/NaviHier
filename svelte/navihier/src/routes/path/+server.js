@@ -1,10 +1,10 @@
-import { json } from "@sveltejs/kit";
+import { json, error } from "@sveltejs/kit";
 
-import { facilities } from "$lib/server/facilities.js";
+import { facilities, Waypoint } from "$lib/server/facilities.js";
 const facilityNameList = Object.keys(facilities);
 
 export async function POST({ request }) {
-  const { start, destination, facility } = request.json();
+  const { start, destination, facility } = await request.json();
 
   console.log(
     `Angeforderter Link: ?s=${encodeURIComponent(

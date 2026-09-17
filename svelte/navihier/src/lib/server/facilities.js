@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 
-export const facilities = setupFacilities();
-
+export const { facilities, Waypoint } = setupFacilities();
 
 // Auslesen aller Details aller Einrichtungen (facilities)
 // dabei Zusammenstellen einer Standort-Räume-Beziehung für jede Einrichtung
@@ -144,5 +143,5 @@ Er wird jedoch in folgender Verbindung erwähnt:
     }
   }
 
-  return facilities;
+  return { facilities, Waypoint };
 }

@@ -105,20 +105,9 @@
     }
     return choices;
   });
-
-  function navigate() {
-    if (!browser) return;
-
-    const params = new URLSearchParams();
-    if (facility) params.set("f", facility);
-    if (start) params.set("s", start);
-    if (destination) params.set("d", destination);
-
-    goto(`/nav?${params.toString()}`);
-  }
 </script>
 
-<form onsubmit={navigate}>
+<form action="/nav">
   <select name="f" bind:value={facility} required>
     {#each Object.keys(allPOI) as fac}
       <option value={fac}>{fac}</option>
@@ -129,7 +118,7 @@
     {#each Object.entries(poi) as [locname, locpoi]}
       {#each Object.entries(locpoi) as [poiid, poinames]}
         {#if poiid !== destination}
-          <option value={poiid}>{poinames.join(" / ")} ({locname})</option>
+          <option value={`${locname}, ${poiid}`}>{poinames.join(" / ")} ({locname})</option>
         {/if}
       {/each}
     {/each}
@@ -139,7 +128,7 @@
     {#each Object.entries(poi) as [locname, locpoi]}
       {#each Object.entries(locpoi) as [poiid, poinames]}
         {#if poiid !== start}
-          <option value={poiid}>{poinames.join(" / ")} ({locname})</option>
+          <option value={`${locname}, ${poiid}`}>{poinames.join(" / ")} ({locname})</option>
         {/if}
       {/each}
     {/each}
