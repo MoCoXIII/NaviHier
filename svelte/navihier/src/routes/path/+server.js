@@ -3,16 +3,17 @@ import { json, error } from "@sveltejs/kit";
 import { facilities, Waypoint } from "$lib/server/facilities.js";
 const facilityNameList = Object.keys(facilities);
 
-export async function POST({ request }) {
+export async function POST({ request, fetch }) {
   const { start, destination, facility } = await request.json();
 
-  console.log(
-    `Angeforderter Link: ?s=${encodeURIComponent(
-      decodeURIComponent(start),
-    )}&d=${encodeURIComponent(
-      decodeURIComponent(destination),
-    )} in Einrichtung ${facility}`,
-  );
+  // console.log(
+  //   `Angeforderter Link: ?s=${encodeURIComponent(
+  //     decodeURIComponent(start),
+  //   )}&d=${encodeURIComponent(
+  //     decodeURIComponent(destination),
+  //   )} in Einrichtung ${facility}`,
+  // );
+
   const URIstart = decodeURIComponent(start);
   const URIdestination = decodeURIComponent(destination);
   let facilityName = decodeURIComponent(facility);
@@ -46,7 +47,7 @@ export async function POST({ request }) {
   // - start: Information über den Punkt, von dem aus begonnen wird
   // - destination: Information über einen Punkt, zu dem der Weg gefunden werden soll
   // - location (Object): der Standort, der alle nötigen Wegpunkte, ihre Verbindungen und Attribute enthält
-  function findPathInLocation(
+  async function findPathInLocation(
     start,
     destination,
     location,
@@ -108,22 +109,44 @@ export async function POST({ request }) {
         let finalPath = [...currentWaypoint.pathToHere, currentWaypoint];
         if (reversed) finalPath.reverse();
 
+        async function getMapImages(mapName, locationName, facilityName) {
+          const mapreq = await fetch("/map", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mapName, locationName, facilityName }),
+          });
+
+          const mapImages = await mapreq.json();
+          return mapImages;
+        }
+
         // finalPath ist nun eine Liste von Wegpunkt-Objekten, mit denen der Client nichts anfangen kann
         // daher muss er in eine Liste von maps zu Waypoint-IDs umgeformt werden
         let finalMapPath = {};
         finalMapPath[locationName] = [];
-        let currentMap = undefined;
+        let currentMap = finalPath[0].map;
         let subMapPath = {};
+        subMapPath[currentMap] = { wp: [] };
+        const mapImages = await getMapImages(
+          currentMap,
+          locationName,
+          facilityName,
+        );
+        subMapPath[currentMap].b64 = mapImages.b64;
         for (const waypoint of finalPath) {
-          if (currentMap === undefined) {
-            currentMap = waypoint.map;
-            subMapPath[currentMap] = [];
-          }
           if (waypoint.map !== currentMap) {
             finalMapPath[locationName].push(subMapPath);
             subMapPath = {};
             currentMap = waypoint.map;
-            subMapPath[currentMap] = [];
+            subMapPath[currentMap] = { wp: [] };
+            const mapImages = await getMapImages(
+              currentMap,
+              locationName,
+              facilityName,
+            );
+            subMapPath[currentMap].b64 = mapImages.b64;
           }
           const waypointInfo = {
             id: waypoint.id,
@@ -132,7 +155,7 @@ export async function POST({ request }) {
             poi: waypoint.poi,
             isExit: waypoint.isExit,
           };
-          subMapPath[currentMap].push(waypointInfo);
+          subMapPath[currentMap].wp.push(waypointInfo);
         }
         finalMapPath[locationName].push(subMapPath);
 
@@ -188,7 +211,7 @@ export async function POST({ request }) {
 
     // Route aus Standort 1 heraus
     finalPath.push(
-      findPathInLocation(
+      await findPathInLocation(
         start,
         destination,
         facilities[facilityName].locations[startLocation],
@@ -203,7 +226,7 @@ export async function POST({ request }) {
     start = { type: "exit" };
     destination = { type: "POI", name: destPOI };
     finalPath.push(
-      findPathInLocation(
+      await findPathInLocation(
         start,
         destination,
         facilities[facilityName].locations[destLocation],
@@ -215,7 +238,7 @@ export async function POST({ request }) {
     let destination = { type: "POI", name: destPOI };
 
     finalPath.push(
-      findPathInLocation(
+      await findPathInLocation(
         start,
         destination,
         facilities[facilityName].locations[startLocation],
