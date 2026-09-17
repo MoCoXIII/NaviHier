@@ -13,7 +13,9 @@
   let facility = $derived(url.searchParams.get("f") || Object.keys(allPOI)[0]);
   // $inspect("facility", facility);
   let start = $derived(url.searchParams.get("s") || "");
+  // $inspect("start", start);
   let destination = $derived(url.searchParams.get("d") || "");
+  // $inspect("destination", destination);
 
   function facpoi(facility) {
     let facpoi = {};
@@ -117,7 +119,7 @@
   <select name="s" bind:value={start} required>
     {#each Object.entries(poi) as [locname, locpoi]}
       {#each Object.entries(locpoi) as [poiid, poinames]}
-        {#if poiid !== destination}
+        {#if `${locname}, ${poiid}` !== destination}
           <option value={`${locname}, ${poiid}`}>{poinames.join(" / ")} ({locname})</option>
         {/if}
       {/each}
@@ -127,7 +129,7 @@
   <select name="d" bind:value={destination} required>
     {#each Object.entries(poi) as [locname, locpoi]}
       {#each Object.entries(locpoi) as [poiid, poinames]}
-        {#if poiid !== start}
+        {#if `${locname}, ${poiid}` !== start}
           <option value={`${locname}, ${poiid}`}>{poinames.join(" / ")} ({locname})</option>
         {/if}
       {/each}
