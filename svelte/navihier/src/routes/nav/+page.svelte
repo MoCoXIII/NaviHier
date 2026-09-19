@@ -12,22 +12,30 @@
   <div id="pagediv">
     {#each path as location}
       {#if typeof location === "string"}
-        <span>
-          Navigieren Sie nun gebäudeübergreifend zur Adresse '{location}'. Links
-          zu
-        </span>
-        <a
-          href="https://www.google.com/maps/dir/?api=1&destination={encodeURIComponent(
-            location,
-          )}"
-          target="_blank">Google Maps</a
+        <div
+          style="
+          align-self: center; 
+          text-align: center; 
+          font-size: 1.2em;
+          width: 70dvw;"
         >
-        <span> und </span>
-        <a
-          href="https://maps.apple.com/?daddr={encodeURIComponent(location)}"
-          target="_blank">Apple Maps</a
-        >
-        <span> wurden von dieser Seite generiert.</span>
+          <span>
+            Navigieren Sie nun gebäudeübergreifend zur Adresse '{location}'.
+            Links zu
+          </span>
+          <a
+            href="https://www.google.com/maps/dir/?api=1&destination={encodeURIComponent(
+              location,
+            )}"
+            target="_blank">Google Maps</a
+          >
+          <span> und </span>
+          <a
+            href="https://maps.apple.com/?daddr={encodeURIComponent(location)}"
+            target="_blank">Apple Maps</a
+          >
+          <span> wurden von dieser Seite generiert.</span>
+        </div>
       {:else}
         {#each Object.values(location) as maps}
           {#each maps as map}
@@ -43,11 +51,14 @@
 
 <style>
   #pagediv {
-    width: 100%;
-    height: 100%;
-    display: block;
-    align-items: center;
-    justify-content: center;
-    border: 1rem;
+    display: grid;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    justify-items: center;
+    gap: 1rem;
+  }
+
+  a {
+    color: var(--primary);
   }
 </style>
