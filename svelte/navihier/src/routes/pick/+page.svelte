@@ -6,7 +6,7 @@
 
   // TODO
   let { data } = $props();
-  const allPOI = $derived(JSON.parse(data.allPOI));
+  let allPOI = $derived(JSON.parse(data.allPOI));
   // $inspect("allPOI", allPOI);
 
   let url = $derived($page.url);
@@ -113,45 +113,50 @@
 </script>
 
 <form action="/nav">
-  <select name="f" bind:value={facility} required>
-    {#each Object.keys(allPOI) as fac}
-      <option value={fac}>{fac}</option>
-    {/each}
-  </select>
+  <fieldset>
+    <legend>Route</legend>
+    {#if Object.keys(allPOI).length !== 1}
+      <select name="f" bind:value={facility} required>
+        {#each Object.keys(allPOI) as fac}
+          <option value={fac}>{fac}</option>
+        {/each}
+      </select>
+    {/if}
 
-  <select name="s" bind:value={start} required>
-    {#each Object.entries(poi) as [locname, locpoi]}
-      {#each Object.entries(locpoi) as [poiid, poinames]}
-        {#if `${locname}, ${poiid}` !== destination}
-          <option value={`${locname}, ${poiid}`}
-            >{poinames.join(" / ")} ({locname})</option
-          >
-        {/if}
+    <select name="s" bind:value={start} required>
+      {#each Object.entries(poi) as [locname, locpoi]}
+        {#each Object.entries(locpoi) as [poiid, poinames]}
+          {#if `${locname}, ${poiid}` !== destination}
+            <option value={`${locname}, ${poiid}`}
+              >{poinames.join(" / ")} ({locname})</option
+            >
+          {/if}
+        {/each}
       {/each}
-    {/each}
-  </select>
+    </select>
 
-  <select name="d" bind:value={destination} required>
-    {#each Object.entries(poi) as [locname, locpoi]}
-      {#each Object.entries(locpoi) as [poiid, poinames]}
-        {#if `${locname}, ${poiid}` !== start}
-          <option value={`${locname}, ${poiid}`}
-            >{poinames.join(" / ")} ({locname})</option
-          >
-        {/if}
+    <select name="d" bind:value={destination} required>
+      {#each Object.entries(poi) as [locname, locpoi]}
+        {#each Object.entries(locpoi) as [poiid, poinames]}
+          {#if `${locname}, ${poiid}` !== start}
+            <option value={`${locname}, ${poiid}`}
+              >{poinames.join(" / ")} ({locname})</option
+            >
+          {/if}
+        {/each}
       {/each}
-    {/each}
-  </select>
+    </select>
 
-  <button type="button" onclick={toggleScanner}>
-    {isScanning ? "QR Scanner stoppen" : "QR Code scannen"}
-  </button>
+    <button type="button" onclick={toggleScanner}>
+      {isScanning ? "QR Scanner stoppen" : "QR Code scannen"}
+    </button>
 
-  {#if isScanning}
-    <div id="qr-group">
-      <video bind:this={qrVideo} id="qr-video" autoplay></video>
-    </div>
-  {/if}
+    {#if isScanning}
+      <div id="qr-group">
+        <video bind:this={qrVideo} id="qr-video" autoplay></video>
+      </div>
+    {/if}
+  </fieldset>
 
   <fieldset>
     <legend>Optionen</legend>
@@ -159,14 +164,18 @@
       <input type="checkbox" bind:checked={options.accessible} />
       Barrierefreiheit
     </label>
-  </fieldset>
 
-  <input type="hidden" name="o" value={oParam} />
+    <input type="hidden" name="o" value={oParam} />
+  </fieldset>
 
   <button type="submit" disabled={!start || !destination}> Navigieren </button>
 </form>
 
 <style>
+  select {
+    width: 100%;
+  }
+
   video {
     max-width: 100%;
     border-radius: 8px;
