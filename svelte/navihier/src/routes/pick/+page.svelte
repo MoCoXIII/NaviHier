@@ -17,6 +17,9 @@
   let destination = $derived(url.searchParams.get("d") || "");
   // $inspect("destination", destination);
 
+  let options = $state({});
+  let oParam = $derived(encodeURIComponent(JSON.stringify(options)));
+
   function facpoi(facility) {
     let facpoi = {};
     const locations = allPOI[facility];
@@ -120,7 +123,9 @@
     {#each Object.entries(poi) as [locname, locpoi]}
       {#each Object.entries(locpoi) as [poiid, poinames]}
         {#if `${locname}, ${poiid}` !== destination}
-          <option value={`${locname}, ${poiid}`}>{poinames.join(" / ")} ({locname})</option>
+          <option value={`${locname}, ${poiid}`}
+            >{poinames.join(" / ")} ({locname})</option
+          >
         {/if}
       {/each}
     {/each}
@@ -130,7 +135,9 @@
     {#each Object.entries(poi) as [locname, locpoi]}
       {#each Object.entries(locpoi) as [poiid, poinames]}
         {#if `${locname}, ${poiid}` !== start}
-          <option value={`${locname}, ${poiid}`}>{poinames.join(" / ")} ({locname})</option>
+          <option value={`${locname}, ${poiid}`}
+            >{poinames.join(" / ")} ({locname})</option
+          >
         {/if}
       {/each}
     {/each}
@@ -145,6 +152,16 @@
       <video bind:this={qrVideo} id="qr-video" autoplay></video>
     </div>
   {/if}
+
+  <fieldset>
+    <legend>Optionen</legend>
+    <label>
+      <input type="checkbox" bind:checked={options.accessible} />
+      Barrierefreiheit
+    </label>
+  </fieldset>
+
+  <input type="hidden" name="o" value={oParam} />
 
   <button type="submit" disabled={!start || !destination}> Navigieren </button>
 </form>

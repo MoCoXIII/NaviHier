@@ -4,7 +4,7 @@ import { facilities, Waypoint } from "$lib/server/facilities.js";
 const facilityNameList = Object.keys(facilities);
 
 export async function POST({ request, fetch }) {
-  const { start, destination, facility } = await request.json();
+  const { start, destination, facility, options } = await request.json();
 
   // console.log(
   //   `Angeforderter Link: ?s=${encodeURIComponent(
@@ -52,8 +52,9 @@ export async function POST({ request, fetch }) {
     destination,
     location,
     locationName,
-    requirements = {},
+    options = {},
   ) {
+    if (!options) options = {};
     // location.waypoints ist global definiert
     // daher ändern sich die Attribute der Wegpunkte im globalen Register, wenn diese Wegfindung sie bearbeitet (Attribute pathToHere & distanceToHere)
     // es muss also eine lokale Kopie dieses Objekts erstellt werden
@@ -173,7 +174,10 @@ export async function POST({ request, fetch }) {
 
         let mayPass = true;
         // hier auf Barrierefreiheit und Zugangsberechtigung prüfen
-        if (requirements.accessible && connection.inaccessible) {
+        if (
+          (options.accessible && connection.inaccessible) ||
+          (!options.accessible && connection.accessibleOnly)
+        ) {
           mayPass = false;
         }
 
@@ -216,6 +220,7 @@ export async function POST({ request, fetch }) {
         destination,
         facilities[facilityName].locations[startLocation],
         startLocation,
+        options,
       ),
     );
 
@@ -231,6 +236,7 @@ export async function POST({ request, fetch }) {
         destination,
         facilities[facilityName].locations[destLocation],
         destLocation,
+        options,
       ),
     );
   } else {
@@ -243,6 +249,7 @@ export async function POST({ request, fetch }) {
         destination,
         facilities[facilityName].locations[startLocation],
         startLocation,
+        options,
       ),
     );
   }
