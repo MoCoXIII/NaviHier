@@ -116,32 +116,38 @@
   <fieldset>
     <legend>Route</legend>
     {#if Object.keys(allPOI).length !== 1}
-      <select name="f" bind:value={facility} required>
+      <select id="f" name="f" bind:value={facility} required>
         {#each Object.keys(allPOI) as fac}
           <option value={fac}>{fac}</option>
         {/each}
       </select>
     {/if}
 
-    <select name="s" bind:value={start} required>
+    <select id="s" class="poi" name="s" bind:value={start} required>
+      <option value="" disabled selected hidden>
+        -- Bitte Start auswählen --
+      </option>
       {#each Object.entries(poi) as [locname, locpoi]}
         {#each Object.entries(locpoi) as [poiid, poinames]}
           {#if `${locname}, ${poiid}` !== destination}
-            <option value={`${locname}, ${poiid}`}
-              >{poinames.join(" / ")} ({locname})</option
-            >
+            <option value={`${locname}, ${poiid}`}>
+              {poinames.join(" / ")} ({locname})
+            </option>
           {/if}
         {/each}
       {/each}
     </select>
 
-    <select name="d" bind:value={destination} required>
+    <select id="d" class="poi" name="d" bind:value={destination} required>
+      <option value="" disabled selected hidden>
+        -- Bitte Ziel auswählen --
+      </option>
       {#each Object.entries(poi) as [locname, locpoi]}
         {#each Object.entries(locpoi) as [poiid, poinames]}
           {#if `${locname}, ${poiid}` !== start}
-            <option value={`${locname}, ${poiid}`}
-              >{poinames.join(" / ")} ({locname})</option
-            >
+            <option value={`${locname}, ${poiid}`}>
+              {poinames.join(" / ")} ({locname})
+            </option>
           {/if}
         {/each}
       {/each}
@@ -172,8 +178,131 @@
 </form>
 
 <style>
+  /* Theme Erkennung */
+  /* https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-color-scheme */
+
+  /* Color Scheme generiert mit https://www.iamsajid.com/ui-colors/ */
+  /* neutral / vivid 0.05; warmer / cooler 210 */
+
+  /* light mode */
+  :root {
+    --font-size: 16px;
+    --font-size-title: 24px;
+
+    --bg-dark: hsl(189 44% 88%);
+    --bg: hsl(189 78% 93%);
+    --bg-light: hsl(189 100% 98%);
+    --text: hsl(193 100% 3%);
+    --text-muted: hsl(189 43% 24%);
+    --highlight: hsl(189 100% 96%);
+    --border: hsl(189 22% 46%);
+    --border-muted: hsl(189 25% 58%);
+    --primary: hsl(187 100% 11%);
+    --secondary: hsl(7 51% 30%);
+    --danger: hsl(9 21% 41%);
+    --warning: hsl(52 23% 34%);
+    --success: hsl(147 19% 36%);
+    --info: hsl(217 22% 41%);
+  }
+  @media (prefers-color-scheme: dark) {
+    /* dark mode */
+    :root {
+      --bg-dark: hsl(195 100% 1%);
+      --bg: hsl(191 96% 3%);
+      --bg-light: hsl(189 61% 7%);
+      --text: hsl(189 100% 91%);
+      --text-muted: hsl(189 31% 66%);
+      --highlight: hsl(189 29% 35%);
+      --border: hsl(189 43% 24%);
+      --border-muted: hsl(188 90% 12%);
+      --primary: hsl(189 59% 59%);
+      --secondary: hsl(9 69% 73%);
+      --danger: hsl(9 26% 64%);
+      --warning: hsl(52 19% 57%);
+      --success: hsl(146 17% 59%);
+      --info: hsl(217 28% 65%);
+    }
+  }
+
+  :root {
+    background: var(--bg-dark);
+    color: var(--text);
+    font-family: arial;
+    font-size: var(--font-size);
+  }
+
+  fieldset {
+    border: 1px solid var(--border-muted);
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  #f {
+    margin: 0 0 12px;
+  }
+
   select {
+    font-size: var(--font-size);
     width: 100%;
+    margin: 0 0 6px;
+    padding: 10px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border-muted);
+    border-radius: 8px;
+  }
+
+  button {
+    font-size: var(--font-size);
+    width: 100%;
+    margin: 12px 0;
+    padding: 10px;
+    background: var(--primary);
+    color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  legend {
+    font-size: var(--font-size-title);
+  }
+
+  label {
+    display: block;
+    margin: 6px;
+  }
+
+  /* Checkbox Styles Tutorial siehe */
+  /* https://moderncss.dev/pure-css-custom-checkbox-style/ */
+  input[type="checkbox"] {
+    /* default appearance entfernen, dann eigene appearance hinzufügen */
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    display: inline-grid;
+    place-content: center;
+    margin: 0;
+    cursor: pointer;
+    transition: background 120ms ease-in-out;
+  }
+  input[type="checkbox"]:checked {
+    background: var(--highlight);
+  }
+  input[type="checkbox"]::before {
+    content: "";
+    width: 0.65rem;
+    height: 0.65rem;
+    background: var(--primary);
+    transform: scale(0);
+    transition: transform 120ms ease-in-out;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+  input[type="checkbox"]:checked::before {
+    transform: scale(1);
   }
 
   video {
