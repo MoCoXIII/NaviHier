@@ -17,7 +17,9 @@
   let destination = $derived(url.searchParams.get("d") || "");
   // $inspect("destination", destination);
 
-  let options = $state({});
+  let options = $derived(
+    JSON.parse(decodeURIComponent(url.searchParams.get("o"))) || {},
+  );
   let oParam = $derived(encodeURIComponent(JSON.stringify(options)));
 
   function facpoi(facility) {
@@ -39,7 +41,14 @@
 
   let qrVideo = $state();
   // $inspect(qrVideo);
-  let scanner = $state(null);
+  let scanner = $derived(createScanner(qrVideo));
+  function createScanner(qrVideo) {
+    if (!browser || !qrVideo) return;
+    return new QrScanner(qrVideo, (result) => handleQRResult(result.data), {
+      highlightScanRegion: true,
+      highlightCodeOutline: true,
+    });
+  }
   let isScanning = $state(false);
 
   function toggleScanner() {
@@ -47,31 +56,12 @@
 
     if (isScanning) {
       scanner?.stop();
-      scanner?.destroy();
-      scanner = null;
       isScanning = false;
-      return;
+    } else {
+      scanner.start();
+      isScanning = true;
     }
-
-    scanner = new QrScanner(qrVideo, (result) => handleQRResult(result.data), {
-      highlightScanRegion: true,
-      highlightCodeOutline: true,
-    });
-
-    scanner.start();
-    isScanning = true;
   }
-
-  //   $effect(() => {
-  //     // im effect zurückgegebene Funktion läuft bei unmount (z.B. Zerstören des Scanner-Video-Elements)
-  //     // "If you return a function from the effect, it will be called right before the effect is run again, or when the component is unmounted."
-  //     // "An effect can return a teardown function which will run immediately before the effect re-runs [and will] also run when the effect is destroyed, which happens when its parent is destroyed (for example, a component is unmounted) [...]."
-  //     // - https://svelte.dev/docs/svelte/$effect
-  //     return () => {
-  //       scanner?.stop();
-  //       scanner?.destroy();
-  //     };
-  //   });
 
   function handleQRResult(resultString) {
     if (!resultString) return;
@@ -85,6 +75,7 @@
 
       if (params.get("s")) start = params.get("s");
       if (params.get("d")) destination = params.get("d");
+      options = JSON.parse(decodeURIComponent(params.get("o")));
 
       // keine Parameter in URL: wahrscheinlich ein verkürzter Link
       // (Seite aufrufen um weitergeleitet zu werden)
@@ -153,15 +144,17 @@
       {/each}
     </select>
 
-    <button type="button" onclick={toggleScanner}>
+    <button
+      type="button"
+      onclick={toggleScanner}
+      hidden={!QrScanner?.hasCamera()}
+    >
       {isScanning ? "QR Scanner stoppen" : "QR Code scannen"}
     </button>
 
-    {#if isScanning}
-      <div id="qr-group">
-        <video bind:this={qrVideo} id="qr-video" autoplay></video>
-      </div>
-    {/if}
+    <div id="qr-group" hidden={!isScanning}>
+      <video bind:this={qrVideo} id="qr-video" playsinline autoplay></video>
+    </div>
   </fieldset>
 
   <fieldset>
