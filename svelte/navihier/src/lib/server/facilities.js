@@ -66,8 +66,7 @@ function setupFacilities() {
           const waypoint = waypoints[waypointID];
           const poiName = waypoint["poi"];
           if (poiName) {
-            const altNames = ro_mapdata.poi[poiName].names;
-            location_poi.poi[poiName] = altNames || poiName;
+            location_poi.poi[poiName] = ro_mapdata.poi[poiName];
           }
         }
       }

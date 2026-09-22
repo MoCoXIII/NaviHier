@@ -29,8 +29,8 @@
       let locpoi = {};
       facpoi[locationName] = locpoi;
       const locationGeo = locationData.location;
-      for (const [id, names] of Object.entries(locationData.poi)) {
-        locpoi[id] = names;
+      for (const [id, properties] of Object.entries(locationData.poi)) {
+        locpoi[id] = properties;
       }
     }
     return facpoi;
@@ -93,13 +93,17 @@
     let groups = {};
     for (const [locname, locpoi] of Object.entries(poi)) {
       let choices = [];
-      for (const [poiid, poinames] of Object.entries(locpoi)) {
+      for (const [poiid, properties] of Object.entries(locpoi)) {
         const value = `${locname}, ${poiid}`;
         if (value === skip) continue;
         let choice = {
           value,
-          name: poinames.join(" / "),
+          name: properties.names.join(" / "),
         };
+        for (const [k, v] of Object.entries(properties)) {
+          if (k === "names") continue;
+          choice[k] = v;
+        }
         choices.push(choice);
       }
       if (choices.length > 0) groups[locname] = choices;
