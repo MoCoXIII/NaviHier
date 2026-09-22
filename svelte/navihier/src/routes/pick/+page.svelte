@@ -3,8 +3,8 @@
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
   import QrScanner from "qr-scanner";
+  import Select from "./Select.svelte";
 
-  // TODO
   let { data } = $props();
   let allPOI = $derived(JSON.parse(data.allPOI));
   // $inspect("allPOI", allPOI);
@@ -89,18 +89,24 @@
     }
   }
 
-  let compiledChoices = $derived(() => {
-    const choices = [];
-    for (let building of Object.keys(poi)) {
-      for (let [id, names] of Object.entries(poi[building].poi)) {
-        choices.push({
-          value: `${building}, ${id}`,
-          label: `${names.join(" / ")} (${building})`,
-        });
+  let locations = $derived((skip = "") => {
+    let groups = {};
+    for (const [locname, locpoi] of Object.entries(poi)) {
+      let choices = [];
+      for (const [poiid, poinames] of Object.entries(locpoi)) {
+        const value = `${locname}, ${poiid}`;
+        if (value === skip) continue;
+        let choice = {
+          value,
+          name: poinames.join(" / "),
+        };
+        choices.push(choice);
       }
+      if (choices.length > 0) groups[locname] = choices;
     }
-    return choices;
+    return groups;
   });
+  // $inspect("locations", locations());
 </script>
 
 <form action="/nav">
@@ -114,35 +120,21 @@
       </select>
     {/if}
 
-    <select id="s" class="poi" name="s" bind:value={start} required>
-      <option value="" disabled selected hidden>
-        -- Bitte Start auswählen --
-      </option>
-      {#each Object.entries(poi) as [locname, locpoi]}
-        {#each Object.entries(locpoi) as [poiid, poinames]}
-          {#if `${locname}, ${poiid}` !== destination}
-            <option value={`${locname}, ${poiid}`}>
-              {poinames.join(" / ")} ({locname})
-            </option>
-          {/if}
-        {/each}
-      {/each}
-    </select>
+    <Select
+      name="s"
+      bind:value={start}
+      placeholder="-- Bitte Startort auswählen --"
+      required
+      groups={locations(destination)}
+    />
 
-    <select id="d" class="poi" name="d" bind:value={destination} required>
-      <option value="" disabled selected hidden>
-        -- Bitte Ziel auswählen --
-      </option>
-      {#each Object.entries(poi) as [locname, locpoi]}
-        {#each Object.entries(locpoi) as [poiid, poinames]}
-          {#if `${locname}, ${poiid}` !== start}
-            <option value={`${locname}, ${poiid}`}>
-              {poinames.join(" / ")} ({locname})
-            </option>
-          {/if}
-        {/each}
-      {/each}
-    </select>
+    <Select
+      name="d"
+      bind:value={destination}
+      placeholder="-- Bitte Zielort auswahlen --"
+      required
+      groups={locations(start)}
+    />
 
     <button
       type="button"
@@ -178,14 +170,10 @@
     border-radius: 12px;
   }
 
-  #f {
-    margin: 0 0 12px;
-  }
-
   select {
     font-size: var(--font-size);
     width: 100%;
-    margin: 0 0 6px;
+    margin: 0 0 12px;
     padding: 10px;
     background: var(--bg);
     color: var(--text);
