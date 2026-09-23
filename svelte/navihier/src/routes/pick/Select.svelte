@@ -82,12 +82,18 @@
     --choices-font-size-md: var(--font-size);
     --choices-font-size-sm: var(--font-size);
     --choices-border-radius: 8px;
-    --choices-width: 100%;
+    --choices-width: 99%;
     --choices-inner-padding: 4px 0;
+    --choices-list-single-padding: 8px 0 4px 0;
+    --choices-input-height: 0px;
+    --choices-guttering: 8px;
 
     :global {
       .choices__input {
         color: var(--text);
+      }
+      .choices__item {
+        padding-left: 10px;
       }
     }
   }

@@ -188,7 +188,7 @@
   button {
     font-size: var(--font-size);
     width: 100%;
-    margin: 12px 0;
+    margin: 4px 0;
     padding: 10px;
     background: var(--primary);
     color: var(--bg);
@@ -206,8 +206,10 @@
   }
 
   label {
-    display: block;
+    display: flex;
     margin: 6px;
+    align-items: end;
+    flex-wrap: wrap;
   }
 
   /* Checkbox Styles Tutorial siehe */
@@ -222,7 +224,7 @@
     background: var(--bg);
     display: inline-grid;
     place-content: center;
-    margin: 0;
+    margin: 0px 4px 0px 0px;
     cursor: pointer;
     transition: background 120ms ease-in-out;
   }
