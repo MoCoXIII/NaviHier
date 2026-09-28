@@ -92,6 +92,26 @@ def del_poi():
     with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
+def config_not_acessible():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    for connection in current_data["connections"]:
+        if data_manager.con_name["start"] == connection["start"] and data_manager.con_name["end"] == connection["end"]:
+            connection["inaccessible"] = True
+            break
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
+        json.dump(current_data, file, indent=4, ensure_ascii=False)
+
+def config_acessible():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    for connection in current_data["connections"]:
+        if data_manager.con_name["start"] == connection["start"] and data_manager.con_name["end"] == connection["end"]:
+            del connection["inaccessible"]
+            break
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
+        json.dump(current_data, file, indent=4, ensure_ascii=False)
+
 def get_waypoint_list():
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)

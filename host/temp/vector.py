@@ -2,7 +2,7 @@ import numpy as np
 # example connections
 connections = [
     {
-         "name": "connection1",
+        "name": "connection1",
         "from": [0, 0],
         "to": [4, 4]
     },
@@ -44,15 +44,15 @@ for vector in vectors:
     print(f"Vector from connection start to point: {ax}")
 
     # calculate the normed vector of the connection
-    normed_vector = vector["vector"] / np.linalg.norm(vector["vector"])
+    normed_vector = vector["vector"] / np.linalg.norm(vector["vector"]) # vector divided by its length
     print(f"Normed vector: {normed_vector}")
 
     # calculate the projection of the point onto the connection
-    projection_length = np.dot(normed_vector, ax)
+    projection_length = np.dot(normed_vector, ax) # dotproduct between the normed vector and the vector from the connection start to the point
     print(f"Projection length: {projection_length}")
 
     # calculate the projected point on the connection
-    projected_point = np.array(vector["from"]) + projection_length * normed_vector
+    projected_point = np.array(vector["from"]) + projection_length * normed_vector # connection start + projection length * normed vector
     print(f"Projected point on connection: {projected_point}")
 
     # calculate the distance between the point and the projected point

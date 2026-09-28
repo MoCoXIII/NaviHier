@@ -7,6 +7,7 @@ import easypygamewidgets as epw
 import data_manager
 from gui import *
 from json_manager import floor_name, add_waypoint_json, add_connection_json
+from vector_handler import *
 
 pygame.init()
 
@@ -20,8 +21,6 @@ data_manager.plan_start_x = data_manager.widget_dic["4_012_surface_plan"].x
 data_manager.plan_start_y = data_manager.widget_dic["4_012_surface_plan"].y
 place_widgets()
 
-print(data_manager.realplan_w, data_manager.realplan_h)
-print(data_manager.plan_w, data_manager.plan_h)
 first_run_second_plan = True
 running = True
 while running:
@@ -64,7 +63,7 @@ while running:
                 pos = pygame.mouse.get_pos()
                 s_x, s_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
                 if data_manager.s_coords_count < 2:
-                    if 0 <= s_x <= data_manager.plan_w and 0 <= s_y <= data_manager.plan_h:
+                    if 0 <= s_x <= data_manager.realplan_w and 0 <= s_y <= data_manager.realplan_h:
                         data_manager.s_coords.append(s_x)
                         data_manager.s_coords.append(s_y)
                         data_manager.s_coords_count += 1
@@ -75,18 +74,28 @@ while running:
             elif data_manager.shape == 2:
                 pos = pygame.mouse.get_pos()
                 p_x, p_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
-                if 0 <= p_x <= data_manager.plan_w and 0 <= p_y <= data_manager.plan_h:
+                if 0 <= p_x <= data_manager.realplan_w and 0 <= p_y <= data_manager.realplan_h:
                     print(p_x, p_y)
                     data_manager.p_coords.append(p_x)
                     data_manager.p_coords.append(p_y)
                     data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")
                     data_manager.p_coords_count += 1
 
-            elif data_manager.new_line and not data_manager.l_clicked:
+            elif data_manager.shape == 3 and data_manager.new_line and not data_manager.l_clicked:
                 if not data_manager.show_line: data_manager.show_line = True
                 pos = pygame.mouse.get_pos()
                 w_x, w_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
-                if 0 <= w_x <= data_manager.plan_w and 0 <= w_y <= data_manager.plan_h:
+                if 0 <= w_x <= data_manager.realplan_w and 0 <= w_y <= data_manager.realplan_h:
+                    lines = create_vectors()
+                    imp_con = determine_important_con(pos, lines)
+                    distance = determine_min_distance(pos, imp_con)
+                    if distance != None and distance["distance"] < 10:
+                        print(1)
+                        pos = distance["projectet_point"][0], distance["projectet_point"][1]
+                        w_x, w_y = int((distance["projectet_point"][0] - data_manager.plan_start_x) / data_manager.scale), int((distance["projectet_point"][1] - data_manager.plan_start_y) / data_manager.scale)
+                        on_con = True
+                    else: on_con = False
+
                     data_manager.w_coords.append(w_x)
                     data_manager.w_coords.append(w_y)
                     data_manager.w_coords_count += 1
@@ -115,10 +124,52 @@ while running:
                         data_manager.last_wp = w_name
                     data_manager.last_wp = w_name
 
+                    if on_con:
+                        for con in data_manager.connections_list:
+                            for wp in data_manager.waypoint_list:
+                                if distance["start"][0] == data_manager.widget_geometry[wp]["x"] and distance["start"][1] == data_manager.widget_geometry[wp]["y"]:
+                                    distance_start = wp
+                                if distance["end"][0] == data_manager.widget_geometry[wp]["x"] and distance["end"][1] == data_manager.widget_geometry[wp]["y"]:
+                                    distance_end = wp
+
+                            if distance_start == con["start"] and distance_end == con["end"]:
+                                data_manager.connections_list.remove(con)
+                                del_connection_json(con)
+
+                                data1 = {
+                                    "start": distance_start,
+                                    "end": w_name
+                                }
+
+                                data2 = {
+                                    "start": w_name,
+                                    "end": distance_end
+                                }
+                                print(data1, data2)
+                                add_connection_json(data1)
+                                add_connection_json(data2)
+                                data_manager.connections_list.append(data1)
+                                data_manager.connections_list.append(data2)
+                                break
                     waypoint_asset = pygame.image.load("assets/waypoint.png")
                     data_manager.widget_dic[w_name] = epw.Surface(frames=[waypoint_asset], anchor_x="center", anchor_y="center", layer=3000).bind("<RELEASE>", lambda name=w_name: click_waypoint(name))
                     data_manager.widget_dic[w_name].scale(0.02, 1)
                     data_manager.widget_dic[w_name].place(x = pos[0], y = pos[1])
+
+            elif data_manager.shape and not data_manager.new_line and not data_manager.l_clicked:
+                pos = pygame.mouse.get_pos()
+                w_x, w_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
+                if 0 <= w_x <= data_manager.realplan_w and 0 <= w_y <= data_manager.realplan_h:
+                    lines = create_vectors()
+                    imp_con = determine_important_con(pos, lines)
+                    distance, connection = determine_min_distance(pos, imp_con)
+                    if distance != None and distance["distance"] < 10:
+                        data_manager.widget_dic["4_3_screen_group"].hide()
+                        data_manager.widget_dic["4_3_screen_group2"].hide()
+                        data_manager.widget_dic["4_3_screen_group3"].hide()
+                        data_manager.widget_dic["4_3_screen_group4"].show()
+                        data_manager.widget_dic["4_3_label_connection"].config(text=f"Verbindung von {connection["start"]} zu {connection["end"]}")
+                        data_manager.con_name = connection
 
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
             data_manager.r_clicked = False

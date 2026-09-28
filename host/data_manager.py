@@ -23,6 +23,7 @@ poi_widgets = None
 stairs_widgets = None
 waypoint_attribute_select = None
 stairs_waypoint = None
+edit_connection = None
 widget_geometry = {}
 widget_dic = {}
 
@@ -34,8 +35,10 @@ show_line = True
 poi = False
 wp_memory = ""
 wp_name = ""
+con_name = ""
 connections_list = []
 last_wp = ""
+acessibleonly = False
 
 id_answer_list = []
 name_answer_list = []

@@ -57,14 +57,14 @@ def place_plan():
     offset_y = (zone_h - scaled_h) // 2
 
     data_manager.widget_dic["4_012_surface_plan"].config(frames=[data_manager.plan])
-    #data_manager.widget_dic["4_012_surface_plan"].scale(None)                                           # WORKAROUND BEI EPW UPDATE ENTFERNEN   
     data_manager.widget_dic["4_012_surface_plan"].scale(data_manager.scale)
     data_manager.widget_dic["4_012_surface_plan"].place(x=zone_x + offset_x, y=zone_y + offset_y)
 
     data_manager.plan_start_x = data_manager.widget_dic["4_012_surface_plan"].x
     data_manager.plan_start_y = data_manager.widget_dic["4_012_surface_plan"].y
-    data_manager.plan_w = scaled_w
-    data_manager.plan_h = scaled_h
+    data_manager.plan_w = data_manager.widget_dic["4_012_surface_plan"].width
+    data_manager.plan_h = data_manager.widget_dic["4_012_surface_plan"].height
+    print(data_manager.plan_w, data_manager.plan_h)
 
 def window_create():
     screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
@@ -137,15 +137,22 @@ def waypoint_selected():
         place_waypoints()
 
 def waypoint_edit_back():
-    data_manager.widget_dic["4_2_screen_group"].hide()
-    data_manager.widget_dic["4_3_screen_group"].hide()
-    data_manager.widget_dic["4_3_screen_group2"].hide()
-    data_manager.widget_dic["4_3_screen_group3"].hide()
-    data_manager.widget_dic["4_3_screen_roomlist"].hide()
-    data_manager.widget_dic["4_0_screen_group"].show()
-    data_manager.last_wp = ""
-    data_manager.shape = 0
-    del_old_waypoints()
+    if not data_manager.widget_dic["4_3_screen_group"].visible and not data_manager.widget_dic["4_3_screen_group4"].visible:
+        data_manager.widget_dic["4_2_screen_group"].hide()
+        data_manager.widget_dic["4_3_screen_group"].hide()
+        data_manager.widget_dic["4_3_screen_group2"].hide()
+        data_manager.widget_dic["4_3_screen_group3"].hide()
+        data_manager.widget_dic["4_3_screen_roomlist"].hide()
+        data_manager.widget_dic["4_0_screen_group"].show()
+        data_manager.last_wp = ""
+        data_manager.shape = 0
+        del_old_waypoints()
+    else:
+        data_manager.widget_dic["4_3_screen_group"].hide()
+        data_manager.widget_dic["4_3_screen_group2"].hide()
+        data_manager.widget_dic["4_3_screen_group3"].hide()
+        data_manager.widget_dic["4_3_screen_group4"].hide()
+
     
 
 def place_waypoints():
@@ -306,11 +313,30 @@ def stairs():
         data_manager.add_stairs = False
         print(data_manager.add_stairs)
 
+def not_acessible():
+    config_not_acessible()
+
+def acessible():
+    config_acessible()
+
+def not_acessibleonly():
+    data_manager.acessibleonly = False
+
+def acessibleonly():
+    data_manager.acessibleonly = True
+
 def add_stairs_connection():
-    data = {
-        "start": data_manager.wp_memory,
-        "end": data_manager.wp_name
-    }
+    if data_manager.acessibleonly:
+        data = {
+            "start": data_manager.wp_memory,
+            "end": data_manager.wp_name,
+            "accessibleOnly": True
+        }
+    else:
+        data = {
+            "start": data_manager.wp_memory,
+            "end": data_manager.wp_name
+        }
     data_manager.connections_list.append(data)
     add_connection_json(data)
     data_manager.second_plan = False
@@ -398,6 +424,7 @@ def click_waypoint(name):
                 data_manager.last_wp = name
                 add = True
         elif not data_manager.second_plan: 
+            data_manager.widget_dic["4_3_screen_group4"].hide()
             data_manager.widget_dic["4_3_screen_group"].show()
             data_manager.widget_dic["4_3_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_name}")
             place_widgets()
@@ -679,6 +706,20 @@ def get_widget_geometry():
             "y": data_manager.res_h * 0.8 + data_manager.widget_dic["4_012_label_statustitle"].height,
             "font_size": 30
         },
+        "4_3_label_titlecon": {
+            "x": data_manager.res_w * 0.85 - data_manager.widget_dic["4_3_label_titlecon"].width // 2,
+            "y": data_manager.res_h * 0.25,
+            "font_size": 40,
+        },
+        "4_3_label_connection": {
+            "x": data_manager.res_w * 0.705,
+            "y": data_manager.res_h * 0.3,
+            "font_size": 15
+        },
+        "4_3_checkbox_acessible": {
+            "x": data_manager.plan_start_x + data_manager.plan_w + 60,
+            "y": data_manager.res_h * 0.4
+        },
         "4_4_label_waypoint": {
             "x": data_manager.res_w * 0.85 - data_manager.widget_dic["4_4_label_waypoint"].width // 2,
             "y": data_manager.res_h * 0.25,
@@ -687,6 +728,10 @@ def get_widget_geometry():
         "4_4_button_select": {
             "x": data_manager.plan_start_x + data_manager.plan_w + 60,
             "y": data_manager.res_h * 0.35,
+        },
+        "4_4_checkbox_acessibleonly": {
+            "x": data_manager.plan_start_x + data_manager.plan_w + 60,
+            "y": data_manager.res_h * 0.45
         }
     }
 def create_widgets(plan):
@@ -698,6 +743,7 @@ def create_widgets(plan):
     data_manager.poi_widgets = epw.Screen(visible=False)
     data_manager.stairs_widgets = epw.Screen(visible=False)
     data_manager.stairs_waypoint = epw.Screen(visible=False)
+    data_manager.edit_connection = epw.Screen(visible=False)
     
     widget_dic = {
         "4_0_screen_group": data_manager.room_creation_screen,
@@ -706,6 +752,7 @@ def create_widgets(plan):
         "4_3_screen_group": data_manager.waypoint_edit_screen,
         "4_3_screen_group2": data_manager.poi_widgets,
         "4_3_screen_group3": data_manager.stairs_widgets,
+        "4_3_screen_group4": data_manager.edit_connection,
         "4_4_screen_group": data_manager.stairs_waypoint,
         "4_012_surface_plan": epw.Surface(frames=[plan]),
         "4_012_label_maintitle": epw.Label(text="Raumeditor", font=epw.SysFont(font="Calibri", font_size=65)),
@@ -750,8 +797,12 @@ def create_widgets(plan):
         "4_3_label_addstairs": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.stairs_widgets).bind("<RELEASE>", select_stairs, False),
         "4_3_button_stairsaccept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=stairs_submit, screen=data_manager.stairs_widgets),
         "4_3_button_back": epw.Button(text="Zurück", font=epw.SysFont(font="Calibri", font_size=30), command=waypoint_edit_back, screen=data_manager.waypoint_creation_screen),
+        "4_3_label_titlecon": epw.Label(text="Verbindungsbearbeitung", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.edit_connection),
+        "4_3_label_connection": epw.Label(text=f"", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", screen=data_manager.edit_connection),
+        "4_3_checkbox_acessible": epw.Checkbox(text="Nicht Barrierefrei", font=epw.SysFont(font="Calibri", font_size=30), check_command=not_acessible, uncheck_command=acessible, screen=data_manager.edit_connection),
         "4_4_label_waypoint": epw.Label(text=f"Treppenwegpunkt:", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", screen=data_manager.stairs_waypoint),
         "4_4_button_select": epw.Button(text="Verbindung erstellen", font=epw.SysFont(font="Calibri", font_size=30), command=add_stairs_connection, alignment="left", state="disabled", screen=data_manager.stairs_waypoint),
+        "4_4_checkbox_acessibleonly": epw.Checkbox(text="Nur für Barrierefreiheit nutzen", font=epw.SysFont(font="Calibri", font_size=30), check_command=acessibleonly, uncheck_command=not_acessibleonly, screen=data_manager.stairs_waypoint),
     }
     return widget_dic
 
