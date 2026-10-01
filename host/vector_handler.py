@@ -55,15 +55,19 @@ def determine_min_distance(pos, lines):
         distances.append({
             "start": line["start"].tolist(),
             "end": line["end"].tolist(),
+            "startwp": line["startwp"], # added: names of the waypoints, so the right connection can be returned
+            "endwp": line["endwp"],
             "distance": distance,
             "projectet_point": projected_point.tolist()
         })
-    try:
-        min_dist = min(distances, key=lambda x: x["distance"])
-        con = {
-            "start": line["startwp"],
-            "end": line["endwp"]
-        }
-        return min_dist, con
-    except ValueError:
-        return None
+
+    # no connection nearby -> return a tuple, so unpacking doesn't fail
+    if not distances:
+        return None, None
+
+    min_dist = min(distances, key=lambda x: x["distance"])
+    con = {
+        "start": min_dist["startwp"], # now taken from the closest connection, not from the last line of the loop
+        "end": min_dist["endwp"]
+    }
+    return min_dist, con

@@ -23,7 +23,7 @@ def add_room_json(data, name, plan_path):
     with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)  
 
-def save_data(plan_path, shape, nr, name, prof, extrainf):
+def save_data(plan_path, nr, name, prof, extrainf):
     room_nr = str(nr[0])
     data = {
         "coords": data_manager.s_coords,
@@ -57,7 +57,10 @@ def add_connection_json(data):
 def del_connection_json(name):
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
-    current_data["connections"].remove(name)
+    current_data["connections"] = [
+        con for con in current_data["connections"]
+        if not (con["start"] == name["start"] and con["end"] == name["end"])
+    ]
     with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
@@ -125,3 +128,10 @@ def get_connection_list():
         current_data = json.load(file)
     connection_list = current_data["connections"].copy()
     return connection_list
+
+def get_waypoint_poi():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    try: poi = current_data["waypoints"][data_manager.wp_name]["poi"]
+    except: poi = None
+    return poi

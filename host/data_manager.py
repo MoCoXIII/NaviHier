@@ -33,10 +33,14 @@ waypoint_list = []
 new_line = False
 show_line = True
 poi = False
+poi_list = []
+poi_list_start = 0
+current_y = 0
 wp_memory = ""
 wp_name = ""
 con_name = ""
 connections_list = []
+connections_list_memory = []
 last_wp = ""
 acessibleonly = False
 
@@ -47,6 +51,9 @@ extrainfo_answer_list = []
 
 add_poi = False
 add_stairs = False
+
+upscroll = False
+downscroll = False
 
 #### main.py
 l_clicked = False

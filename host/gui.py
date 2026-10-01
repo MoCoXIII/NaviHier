@@ -64,7 +64,6 @@ def place_plan():
     data_manager.plan_start_y = data_manager.widget_dic["4_012_surface_plan"].y
     data_manager.plan_w = data_manager.widget_dic["4_012_surface_plan"].width
     data_manager.plan_h = data_manager.widget_dic["4_012_surface_plan"].height
-    print(data_manager.plan_w, data_manager.plan_h)
 
 def window_create():
     screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
@@ -98,6 +97,7 @@ def select_stairs():
         data_manager.plan, data_manager.realplan_w, data_manager.realplan_h, data_manager.plan_path = plan_create(2)
     except FileNotFoundError:
         return
+    data_manager.connections_list_memory = data_manager.connections_list
     data_manager.second_plan = True
     data_manager.scale = get_scale()
     place_plan()
@@ -199,7 +199,6 @@ def delay_4_1_button_infosub():
 
 def room_create_finish_submit():
     save_data(data_manager.plan_path, 
-              data_manager.shape, 
               data_manager.id_answer_list, 
               data_manager.name_answer_list, 
               data_manager.prof_answer_list, 
@@ -306,12 +305,14 @@ def stairs():
         data_manager.widget_dic["4_3_screen_group3"].show()
         data_manager.widget_dic["4_3_button_stairs"].config(text="Treppenverbindung entfernen")
         data_manager.add_stairs = True
-        print(data_manager.add_stairs)
     elif data_manager.add_stairs:
         data_manager.widget_dic["4_3_screen_group3"].hide()
         data_manager.widget_dic["4_3_button_stairs"].config(text="Treppenverbindung hinzufügen")
         data_manager.add_stairs = False
-        print(data_manager.add_stairs)
+        name = {"start": data_manager.wp_name, "end": data_manager.widget_dic["4_3_label_addstairs"].text}
+        del_connection_json(name)
+        data_manager.connections_list.remove(name)
+        print(data_manager.connections_list)
 
 def not_acessible():
     config_not_acessible()
@@ -337,45 +338,79 @@ def add_stairs_connection():
             "start": data_manager.wp_memory,
             "end": data_manager.wp_name
         }
-    data_manager.connections_list.append(data)
+    data_manager.connections_list_memory.append(data)
     add_connection_json(data)
     data_manager.second_plan = False
     data_manager.plan_path = data_manager.plan_path_memory
     data_manager.plan, data_manager.realplan_w, data_manager.realplan_h = get_plan_values()
-    print(data_manager.plan, data_manager.realplan_w, data_manager.realplan_h)
     data_manager.scale = get_scale()
     place_plan()
     del_old_waypoints()
     place_waypoints()
     place_widgets()
+    data_manager.connections_list = data_manager.connections_list_memory
+    data_manager.wp_name, data_manager.wp_memory = data_manager.wp_memory, data_manager.wp_name
     data_manager.widget_dic["4_4_screen_group"].hide()
     data_manager.widget_dic["4_2_screen_group"].show()
     data_manager.widget_dic["4_3_screen_group"].show()
     data_manager.widget_dic["4_3_screen_group2"].show()
     data_manager.widget_dic["4_3_screen_group3"].show()
-    data_manager.widget_dic["4_3_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_memory}")
-    data_manager.widget_dic["4_3_label_addstairs"].config(text=data_manager.wp_name)
+    data_manager.widget_dic["4_3_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_name}")
+    data_manager.widget_dic["4_3_label_addstairs"].config(text=data_manager.wp_memory)
 
 
 def poi_select(self):
     data_manager.widget_dic["4_3_label_dropdown"].config(text=self.text)
 
 def show_list():
-    room_list = get_room_list(data_manager.plan_path)
-    add_room_list = []
-    label_max_y = data_manager.res_h * 0.743
-    for i in range(len(room_list)):
-        if room_list[i] not in data_manager.widget_dic:
-            add_room_list.append(room_list[i])
-        elif data_manager.widget_geometry[room_list[i]]["y"] > label_max_y:
-            label_max_y = data_manager.widget_geometry[room_list[i]]["y"]
-
-    for i in range(len(add_room_list)):
-        data_manager.widget_dic[add_room_list[i]] = epw.Label(text=add_room_list[i], font=epw.SysFont(font="Calibri", font_size=30), screen=data_manager.room_list).bind("<RELEASE>", lambda self: poi_select(self))
-        data_manager.widget_geometry[add_room_list[i]] = {"x": data_manager.plan_start_x + data_manager.plan_w + 60, "y": label_max_y}
-        label_max_y += 50
+    print("show")
+    for room in data_manager.poi_list:
+        try: del data_manager.widget_dic[room]
+        except: pass
+    data_manager.poi_list = get_room_list(data_manager.plan_path)
+    data_manager.poi_list_start = 0
+    data_manager.current_y = data_manager.res_h * 0.745
+    max_y = data_manager.res_h * 0.95
+    data_manager.widget_dic["4_3_button_scrollup"].hide()
+    data_manager.widget_dic["4_3_button_scrolldown"].hide()
+    for room in data_manager.poi_list:
+        if data_manager.current_y < max_y:
+            data_manager.widget_dic[room] = epw.Label(text=room, font=epw.SysFont(font="Calibri"), screen=data_manager.room_list).bind("<RELEASE>", lambda self: poi_select(self))
+            data_manager.widget_geometry[room] = {
+                "x": data_manager.plan_start_x + data_manager.plan_w + 60,
+                "y": data_manager.current_y,
+                "font_size": 30
+            }
+            data_manager.current_y += 50
+        else:
+            data_manager.widget_dic["4_3_button_scrolldown"].show()
     place_widgets()
     data_manager.widget_dic["4_3_screen_roomlist"].show()
+
+def scroll(x):
+    print(x)
+    for room in data_manager.poi_list:
+        try: del data_manager.widget_dic[room]
+        except: pass
+    data_manager.poi_list = get_room_list(data_manager.plan_path)
+    data_manager.poi_list_start += x
+    max_y = data_manager.res_h * 0.95
+    i = -1
+    for room in data_manager.poi_list:
+        i += 1
+        print(i)
+        if data_manager.current_y < max_y:
+            if i >= data_manager.poi_list_start:
+                data_manager.widget_dic[room] = epw.Label(text=room, font=epw.SysFont(font="Calibri"), screen=data_manager.room_list).bind("<RELEASE>", lambda self: poi_select(self))
+                data_manager.widget_geometry[room] = {
+                    "x": data_manager.plan_start_x + data_manager.plan_w + 60,
+                    "y": data_manager.current_y,
+                    "font_size": 30
+                }
+                data_manager.current_y += 50
+            else: data_manager.upscroll = True
+        else:
+            data_manager.widget_dic["4_3_button_scrolldown"].show()
 
 def del_waypoint(wp, type):
     del_con_list = [
@@ -427,6 +462,16 @@ def click_waypoint(name):
             data_manager.widget_dic["4_3_screen_group4"].hide()
             data_manager.widget_dic["4_3_screen_group"].show()
             data_manager.widget_dic["4_3_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_name}")
+            poi = get_waypoint_poi()
+            if poi != None:
+                data_manager.widget_dic["4_3_screen_group2"].show()
+                data_manager.widget_dic["4_3_button_poiaccept"].show()
+                data_manager.widget_dic["4_3_label_dropdown"].config(text=poi)
+                data_manager.widget_dic["4_3_button_poi"].config(text="Zielort entfernen")
+            else:
+                data_manager.widget_dic["4_3_screen_group2"].hide()
+                data_manager.widget_dic["4_3_button_poiaccept"].hide()
+                data_manager.widget_dic["4_3_button_poi"].config(text="Zielort hinzufügen")
             place_widgets()
         else:
             data_manager.widget_dic["4_4_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_name}")
@@ -684,6 +729,16 @@ def get_widget_geometry():
             "height": 57,
             "font_size": 30
         },
+        "4_3_button_scrollup": {
+            "x": data_manager.plan_start_x + data_manager.plan_w + 300,
+            "y": data_manager.res_h * 0.8274 - 50,
+            "font_size": 30
+        },
+        "4_3_button_scrolldown": {
+            "x": data_manager.plan_start_x + data_manager.plan_w + 300,
+            "y": data_manager.res_h * 0.8674,
+            "font_size": 30
+        },
         "4_3_button_stairs":{
             "x": data_manager.plan_start_x + data_manager.plan_w + 60,
             "y": data_manager.res_h * 0.4,
@@ -739,7 +794,7 @@ def create_widgets(plan):
     data_manager.room_info_screen = epw.Screen(visible=False)
     data_manager.waypoint_creation_screen = epw.Screen(visible=False)
     data_manager.waypoint_edit_screen = epw.Screen(visible=False)
-    data_manager.room_list = epw.Screen(visible=True)
+    data_manager.room_list = epw.Screen(visible=False)
     data_manager.poi_widgets = epw.Screen(visible=False)
     data_manager.stairs_widgets = epw.Screen(visible=False)
     data_manager.stairs_waypoint = epw.Screen(visible=False)
@@ -793,6 +848,8 @@ def create_widgets(plan):
         "4_3_label_dropdown": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.poi_widgets).bind("<RELEASE>", show_list),
         "4_3_button_poiaccept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=poi_submit, auto_size=False, screen=data_manager.poi_widgets),
         "4_3_screen_roomlist": data_manager.room_list,
+        "4_3_button_scrollup": epw.Button(text="↑", font=epw.SysFont(font="Calibri", font_size=30), command=lambda: scroll(1), screen=data_manager.room_list),
+        "4_3_button_scrolldown": epw.Button(text="↓", font=epw.SysFont(font="Calibri", font_size=30), command=lambda:scroll(-1), screen=data_manager.room_list),
         "4_3_button_stairs": epw.Button(text="Treppenverbindung hinzufügen", font=epw.SysFont(font="Calibri", font_size=30), command=stairs, alignment="left", screen=data_manager.waypoint_edit_screen),
         "4_3_label_addstairs": epw.Label(text="", font=epw.SysFont(font="Calibri", font_size=30), active_unpressed_background_color=(50, 50, 50), active_hover_background_color=(50, 50, 50), active_pressed_background_color=(50, 50, 50), top_left_corner_radius=15, top_right_corner_radius=15, bottom_left_corner_radius=15, bottom_right_corner_radius=15, screen=data_manager.stairs_widgets).bind("<RELEASE>", select_stairs, False),
         "4_3_button_stairsaccept": epw.Button(text="Bestätigen", font=epw.SysFont(font="Calibri", font_size=30), command=stairs_submit, screen=data_manager.stairs_widgets),
