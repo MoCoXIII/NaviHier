@@ -10,8 +10,9 @@
     <img id="map" style="position: absolute; top: 0px; left: 0px;">
     <svg id="svg" style="position: absolute; top: 0px; left: 0px;"></svg>
     <script type="module">
-        const png = "./facilities/Gymnasium_Wernigerode/S-Gebäude/EG/plans/EG.png";
-        const jason = "./facilities/Gymnasium_Wernigerode/S-Gebäude/EG/EG.json";
+        const mapn = "EG";
+        const png = `./facilities/Gymnasium_Wernigerode/S-Gebäude/${mapn}/plans/${mapn}.png`;
+        const jason = `./facilities/Gymnasium_Wernigerode/S-Gebäude/${mapn}/${mapn}.json`;
 
         const map = document.getElementById("map");
         const svg = document.getElementById("svg");
@@ -75,7 +76,7 @@
 
                     if (waypoint.poi) {
                         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                        text.textContent = waypoint.poi;
+                        text.textContent = data.poi[waypoint.poi].names[0];
                         svg.appendChild(text);
                         text.setAttribute("font-size", "11");
                         text.setAttribute("font-weight", "bold");
@@ -101,11 +102,13 @@
             });
 
         svg.onclick = (e) => {
+            let cx = e.x + document.scrollingElement.scrollLeft;
+            let cy = e.y + document.scrollingElement.scrollTop;
             console.log(
                 `,
-"EG_${e.x},${e.y}": {
-    "x": ${e.x},
-    "y": ${e.y}
+"${mapn}_${cx},${cy}": {
+    "x": ${cx},
+    "y": ${cy}
 }`);
         };
 

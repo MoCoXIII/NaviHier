@@ -17,10 +17,16 @@
   let destination = $derived(url.searchParams.get("d") || "");
   // $inspect("destination", destination);
 
-  let options = $derived(
-    JSON.parse(decodeURIComponent(url.searchParams.get("o"))) || {},
-  );
+  let options = $state({});
+  Object.assign(options, JSON.parse(decodeURIComponent(url.searchParams.get("o"))));
+  // $inspect("options", options);
   let oParam = $derived(encodeURIComponent(JSON.stringify(options)));
+
+  let accessible = $state(false);
+  // $inspect("accessible", accessible);
+  $effect(() => {
+    options.accessible = accessible;
+  });
 
   function facpoi(facility) {
     let facpoi = {};
@@ -156,7 +162,7 @@
   <fieldset>
     <legend>Optionen</legend>
     <label>
-      <input type="checkbox" bind:checked={options.accessible} />
+      <input type="checkbox" bind:checked={accessible} />
       Barrierefreiheit
     </label>
 
