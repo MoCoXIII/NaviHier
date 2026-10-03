@@ -97,7 +97,6 @@ def select_stairs():
         data_manager.plan, data_manager.realplan_w, data_manager.realplan_h, data_manager.plan_path = plan_create(2)
     except FileNotFoundError:
         return
-    data_manager.connections_list_memory = data_manager.connections_list
     data_manager.second_plan = True
     data_manager.scale = get_scale()
     place_plan()
@@ -292,10 +291,12 @@ def poi():
     if not data_manager.add_poi:
         data_manager.widget_dic["4_3_screen_group2"].show()
         data_manager.widget_dic["4_3_button_poi"].config(text="Zielort entfernen")
+        data_manager.widget_dic["4_3_label_dropdown"].config(text="")
         data_manager.add_poi = True
     elif data_manager.add_poi:
         data_manager.widget_dic["4_3_screen_group2"].hide()
         data_manager.widget_dic["4_3_screen_roomlist"].hide()
+        data_manager.widget_dic["4_3_button_poiaccept"].hide()
         data_manager.widget_dic["4_3_button_poi"].config(text="Zielort hinzufügen")
         data_manager.add_poi = False
         del_poi()
@@ -304,6 +305,7 @@ def stairs():
     if not data_manager.add_stairs:
         data_manager.widget_dic["4_3_screen_group3"].show()
         data_manager.widget_dic["4_3_button_stairs"].config(text="Treppenverbindung entfernen")
+        data_manager.widget_dic["4_3_label_addstairs"].config(text="")
         data_manager.add_stairs = True
     elif data_manager.add_stairs:
         data_manager.widget_dic["4_3_screen_group3"].hide()
@@ -328,27 +330,35 @@ def acessibleonly():
 
 def add_stairs_connection():
     if data_manager.acessibleonly:
-        data = {
+        data1 = {
             "start": data_manager.wp_memory,
             "end": data_manager.wp_name,
             "accessibleOnly": True
         }
+        data2 = {
+            "start": data_manager.wp_name,
+            "end": data_manager.wp_memory,
+            "accessibleOnly": True
+        }
     else:
-        data = {
+        data1 = {
             "start": data_manager.wp_memory,
             "end": data_manager.wp_name
         }
-    data_manager.connections_list_memory.append(data)
-    add_connection_json(data)
+        data2 = {
+            "start": data_manager.wp_name,
+            "end": data_manager.wp_memory
+        }
+    add_connection_json(data2)
     data_manager.second_plan = False
     data_manager.plan_path = data_manager.plan_path_memory
+    add_connection_json(data1)
     data_manager.plan, data_manager.realplan_w, data_manager.realplan_h = get_plan_values()
     data_manager.scale = get_scale()
     place_plan()
     del_old_waypoints()
     place_waypoints()
     place_widgets()
-    data_manager.connections_list = data_manager.connections_list_memory
     data_manager.wp_name, data_manager.wp_memory = data_manager.wp_memory, data_manager.wp_name
     data_manager.widget_dic["4_4_screen_group"].hide()
     data_manager.widget_dic["4_2_screen_group"].show()
@@ -452,6 +462,18 @@ def click_waypoint(name):
                 data_manager.widget_dic["4_3_screen_group2"].hide()
                 data_manager.widget_dic["4_3_button_poiaccept"].hide()
                 data_manager.widget_dic["4_3_button_poi"].config(text="Zielort hinzufügen")
+
+            end_wp = get_waypoint_stairconnection()
+            print(end_wp)
+            if end_wp != None:
+                data_manager.widget_dic["4_3_screen_group3"].show()
+                data_manager.widget_dic["4_3_button_stairsaccept"].show()
+                data_manager.widget_dic["4_3_label_addstairs"].config(text=end_wp)
+                data_manager.widget_dic["4_3_button_stairs"].config(text="Treppenverbindung entfernen")
+            else:
+                data_manager.widget_dic["4_3_screen_group3"].hide()
+                data_manager.widget_dic["4_3_button_stairsaccept"].hide()
+                data_manager.widget_dic["4_3_button_stairs"].config(text="Treppenverbindung hinzufügen")
             place_widgets()
         else:
             data_manager.widget_dic["4_4_label_waypoint"].config(text=f"Wegpunkt: {data_manager.wp_name}")

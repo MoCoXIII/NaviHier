@@ -135,3 +135,13 @@ def get_waypoint_poi():
     try: poi = current_data["waypoints"][data_manager.wp_name]["poi"]
     except: poi = None
     return poi
+
+def get_waypoint_stairconnection():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    end_wp = None
+    for con in current_data["connections"]:
+        if con["start"] == data_manager.wp_name and con["end"] not in data_manager.waypoint_list:
+            end_wp = con["end"]
+            break
+    return end_wp
