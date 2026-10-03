@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
+  import { base } from "$app/paths";
   import QrScanner from "qr-scanner";
   import Select from "./Select.svelte";
 
@@ -119,7 +120,7 @@
   // $inspect("locations", locations());
 </script>
 
-<form action="/nav">
+<form action="{base}/nav">
   <fieldset>
     <legend>Route</legend>
     {#if Object.keys(allPOI).length !== 1}

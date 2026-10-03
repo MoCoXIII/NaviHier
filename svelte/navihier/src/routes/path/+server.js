@@ -1,4 +1,5 @@
 import { json, error } from "@sveltejs/kit";
+import { base } from "$app/paths";
 
 import { facilities, Waypoint } from "$lib/server/facilities.js";
 const facilityNameList = Object.keys(facilities);
@@ -111,7 +112,7 @@ export async function POST({ request, fetch }) {
         if (reversed) finalPath.reverse();
 
         async function getMapImages(mapName, locationName, facilityName) {
-          const mapreq = await fetch("/map", {
+          const mapreq = await fetch(`${base}/map`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
