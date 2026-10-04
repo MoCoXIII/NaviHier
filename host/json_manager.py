@@ -64,6 +64,24 @@ def del_connection_json(name):
     with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)
 
+def del_second_connection_json(name):
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    for con in current_data["connections"]:
+        if con["start"] == name["start"] and con["end"] == name["end"]:
+            second_plan_path = con["end_plan_path"]
+            break
+    if second_plan_path is None:
+        return
+    with open(fr"{str(json_path(second_plan_path))}", "r", encoding="utf-8") as file:
+        second_data = json.load(file)
+    second_data["connections"] = [
+        con for con in second_data["connections"]
+        if not (con["start"] == name["end"] and con["end"] == name["start"])
+    ]
+    with open(fr"{str(json_path(second_plan_path))}", "w", encoding="utf-8") as file:
+        json.dump(second_data, file, indent=4, ensure_ascii=False)
+
 def get_room_list(plan_path):
     with open(fr"{str(json_path(plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)
