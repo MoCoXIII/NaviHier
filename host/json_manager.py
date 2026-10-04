@@ -160,6 +160,13 @@ def get_waypoint_poi():
     except: poi = None
     return poi
 
+def get_acessibility(start, end):
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    for con in current_data["connections"]:
+        if con["start"] == start and con["end"] == end and "inaccessible" in con.keys():
+            return True
+    return False
 def get_waypoint_stairconnection():
     with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
         current_data = json.load(file)

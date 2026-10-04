@@ -339,6 +339,9 @@ def not_acessibleonly():
 def acessibleonly():
     data_manager.acessibleonly = True
 
+#def stairs_wp_create():
+    
+
 def add_stairs_connection():
     print(data_manager.plan_path, data_manager.plan_path_memory)
     if data_manager.acessibleonly:
@@ -807,7 +810,11 @@ def get_widget_geometry():
         "4_4_checkbox_acessibleonly": {
             "x": data_manager.plan_start_x + data_manager.plan_w + 60,
             "y": data_manager.res_h * 0.45
-        }
+        },
+        #"4_4_button_newwaypoint": {
+        #    "x": data_manager.plan_start_x + data_manager.plan_w + 60,
+        #    "y": data_manager.res_h * 0.55
+        #}
     }
 def create_widgets(plan):
     data_manager.room_creation_screen = epw.Screen(visible=True)
@@ -880,6 +887,7 @@ def create_widgets(plan):
         "4_4_label_waypoint": epw.Label(text=f"Treppenwegpunkt:", font=epw.SysFont(font="Calibri", font_size=30), alignment="left", screen=data_manager.stairs_waypoint),
         "4_4_button_select": epw.Button(text="Verbindung erstellen", font=epw.SysFont(font="Calibri", font_size=30), command=add_stairs_connection, alignment="left", state="disabled", screen=data_manager.stairs_waypoint),
         "4_4_checkbox_acessibleonly": epw.Checkbox(text="Nur für Barrierefreiheit nutzen", font=epw.SysFont(font="Calibri", font_size=30), check_command=acessibleonly, uncheck_command=not_acessibleonly, screen=data_manager.stairs_waypoint),
+        #"4_4_button_newwaypoint": epw.Button(text="Neuen Wegpunkt für die Verbindung erstellen", font=epw.SysFont(font="Calibri", font_size=30), command=stairs_wp_create, alignment="left", screen=data_manager.stairs_waypoint),
     }
     return widget_dic
 

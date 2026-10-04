@@ -156,6 +156,12 @@ while running:
                         data_manager.widget_dic["4_3_screen_group3"].hide()
                         data_manager.widget_dic["4_3_screen_group4"].show()
                         data_manager.widget_dic["4_3_label_connection"].config(text=f"Verbindung von {connection["start"]} zu {connection["end"]}")
+                        ac = get_acessibility(connection["start"], connection["end"])
+                        print(ac)
+                        if ac:
+                            data_manager.widget_dic["4_3_checkbox_acessible"].config(checked = True)
+                        else:
+                            data_manager.widget_dic["4_3_checkbox_acessible"].config(checked = False)
                         data_manager.con_name = connection
 
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 3:
