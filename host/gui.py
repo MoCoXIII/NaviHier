@@ -10,10 +10,18 @@ import ctypes.wintypes
 import data_manager
 from json_manager import *
 
+def root_selection():
+    print("Wähle den Einrichtungsordner aus")
+    try:
+        root_path = customtkinter.filedialog.askdirectory(title="Bitte wähle den Ordner der zu bearbeitenden Einrichtung aus", initialdir=r"facilities")
+        return Path(root_path)
+    except FileNotFoundError:
+        exit(0)
+
 def plan_selection(scenario):
     print("Wähle den Gebäudeplan aus")
     try: 
-        plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("All", "*.png;*.jpg;*.jpeg;*.webp"), ("PNG Datei", "*.png"), ("JPG Datei", "*.jpg"), ("JPEG Datei", "*.jpeg"), ("WEBP Datei", "*.webp")], initialdir=r"Gymnasium_Wernigerode")
+        plan_path = customtkinter.filedialog.askopenfilename(title = "Bitte wähle die Datei des Gebäudeplans aus", filetypes=[("All", "*.png;*.jpg;*.jpeg;*.webp"), ("PNG Datei", "*.png"), ("JPG Datei", "*.jpg"), ("JPEG Datei", "*.jpeg"), ("WEBP Datei", "*.webp")], initialdir=data_manager.root.name)
         if plan_path == "": 
             raise FileNotFoundError
         return plan_path
@@ -81,7 +89,6 @@ def window_create():
     appereance_mode = ctypes.c_int(2)                                                                                       # appereance_mode: Variable zum Speichern des Anzeigemodus der Titelleiste // 0 = Light Mode, 1 = Dark Mode, 2 = Systemstandard
     ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(appereance_mode), ctypes.sizeof(appereance_mode))     # DwmSetWindowAttribute: Funktion zum Ändern des Anzeigemodus der Titelleiste       # ctypes.byref: Funktion zu Bestimmen des Speicherorts der Variable; ctypes.sizeof: Funktion zum Bestimmen des Speicherplatzes der Variable (int: 4)
     pygame.event.pump()
-    print(screen_w, screen_h)
     return screen                                                                                                           # update von Pygame
 
 def get_window_size():
@@ -338,25 +345,25 @@ def add_stairs_connection():
         data1 = {
             "start": data_manager.wp_memory,
             "end": data_manager.wp_name,
-            "end_plan_path": data_manager.plan_path,
+            "end_plan_path": to_relative(data_manager.plan_path),
             "accessibleOnly": True
         }
         data2 = {
             "start": data_manager.wp_name,
             "end": data_manager.wp_memory,
-            "end_plan_path": data_manager.plan_path_memory,
+            "end_plan_path": to_relative(data_manager.plan_path_memory),
             "accessibleOnly": True
         }
     else:
         data1 = {
             "start": data_manager.wp_memory,
             "end": data_manager.wp_name,
-            "end_plan_path": data_manager.plan_path
+            "end_plan_path": to_relative(data_manager.plan_path)
         }
         data2 = {
             "start": data_manager.wp_name,
             "end": data_manager.wp_memory,
-            "end_plan_path": data_manager.plan_path_memory
+            "end_plan_path": to_relative(data_manager.plan_path_memory)
         }
     add_connection_json(data2)
     data_manager.second_plan = False

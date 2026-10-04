@@ -2,6 +2,12 @@ import json
 import data_manager
 from pathlib import Path
 
+def to_relative(plan_path):
+    return Path(plan_path).resolve().relative_to(data_manager.root).as_posix()
+
+def to_absolute(rel_plan_path):
+    return (data_manager.root / rel_plan_path).as_posix()
+
 def floor_name(plan_path):
     path_objekt = Path(plan_path)
     folder = path_objekt.parent.parent
@@ -69,7 +75,7 @@ def del_second_connection_json(name):
         current_data = json.load(file)
     for con in current_data["connections"]:
         if con["start"] == name["start"] and con["end"] == name["end"]:
-            second_plan_path = con["end_plan_path"]
+            second_plan_path = to_absolute(con["end_plan_path"])
             break
     if second_plan_path is None:
         return

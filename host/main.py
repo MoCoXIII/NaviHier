@@ -12,6 +12,7 @@ from vector_handler import *
 pygame.init()
 
 data_manager.screen = window_create()
+data_manager.root = root_selection()
 data_manager.plan, data_manager.realplan_w, data_manager.realplan_h, data_manager.plan_path = plan_create(1)
 data_manager.scale = get_scale()
 data_manager.widget_dic = get_widget_dic(data_manager.plan)

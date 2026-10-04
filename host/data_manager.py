@@ -54,6 +54,8 @@ upscroll = False
 downscroll = False
 
 #### main.py
+root = ""
+
 l_clicked = False
 r_clicked = False
 
