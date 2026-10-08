@@ -32,7 +32,6 @@ def add_room_json(data, name, plan_path):
 def save_data(plan_path, nr, name, prof, extrainf):
     room_nr = str(nr[0])
     data = {
-        "coords": data_manager.s_coords,
         "names": name,
         "prof": prof,
         "extrainfo": extrainf

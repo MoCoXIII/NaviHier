@@ -27,16 +27,6 @@ running = True
 while running:
     # färben des Hintergrunds
     data_manager.screen.fill((30, 30, 30))
-
-    if data_manager.s_coords_count == 2 or data_manager.p_coords_count >= 3:
-        data_manager.widget_dic["4_0_button_createsub"].config(state = "enabled")
-    else:
-        data_manager.widget_dic["4_0_button_createsub"].config(state = "disabled")
-
-    if data_manager.shape == 0:
-        data_manager.widget_dic["4_0_button_createcan"].config(state = "disabled")
-    else:
-        data_manager.widget_dic["4_0_button_createcan"].config(state = "enabled")
     
     if data_manager.id_answer_list == []:
         data_manager.widget_dic["4_1_button_finishsub"].config(state = "disabled")
@@ -58,31 +48,9 @@ while running:
                 hovered = widget.rect.collidepoint(pygame.mouse.get_pos())
                 if hovered:
                     data_manager.l_clicked = True
-                    break
-            
-            if data_manager.shape == 1:
-                pos = pygame.mouse.get_pos()
-                s_x, s_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
-                if data_manager.s_coords_count < 2:
-                    if 0 <= s_x <= data_manager.realplan_w and 0 <= s_y <= data_manager.realplan_h:
-                        data_manager.s_coords.append(s_x)
-                        data_manager.s_coords.append(s_y)
-                        data_manager.s_coords_count += 1
-                        data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {s_x}, {s_y} wurde hinzugefügt.")
-                elif 0 <= s_x <= data_manager.plan_w and 0 <= s_y <= data_manager.plan_h:
-                    data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Es wurden bereits zwei Koordinaten hinzugefügt. [{data_manager.s_coords[0]}, {data_manager.s_coords[1]}]; [{data_manager.s_coords[2]}, {data_manager.s_coords[3]}]")
+                    break            
 
-            elif data_manager.shape == 2:
-                pos = pygame.mouse.get_pos()
-                p_x, p_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
-                if 0 <= p_x <= data_manager.realplan_w and 0 <= p_y <= data_manager.realplan_h:
-                    print(p_x, p_y)
-                    data_manager.p_coords.append(p_x)
-                    data_manager.p_coords.append(p_y)
-                    data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {p_x}, {p_y} wurde hinzugefügt.")
-                    data_manager.p_coords_count += 1
-
-            elif data_manager.shape == 3 and data_manager.new_line and not data_manager.l_clicked:
+            if data_manager.shape == 3 and data_manager.new_line and not data_manager.l_clicked:
                 if not data_manager.show_line: data_manager.show_line = True
                 pos = pygame.mouse.get_pos()
                 w_x, w_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
@@ -143,7 +111,17 @@ while running:
                     data_manager.widget_dic[w_name].scale(0.02, 1)
                     data_manager.widget_dic[w_name].place(x = pos[0], y = pos[1])
 
-            elif data_manager.shape and not data_manager.new_line and not data_manager.l_clicked:
+                    if data_manager.second_plan:
+                        if data_manager.second_plan_wp_count == 0:
+                            data_manager.second_plan_wp_count = 1
+                        if data_manager.second_plan_wp_count == 1:
+                            last_wp = data_manager.waypoint_list[-2]
+                            del_waypoint(last_wp, 1)
+                        data_manager.wp_name = data_manager.waypoint_list[-1]
+                        data_manager.widget_dic["4_4_label_waypoint"].config(text=f"Treppenwegpunkt: {data_manager.wp_name}")
+                        data_manager.widget_dic["4_4_button_select"].config(state="enabled")
+
+            elif data_manager.shape and not data_manager.new_line and not data_manager.l_clicked and not data_manager.second_plan:
                 pos = pygame.mouse.get_pos()
                 w_x, w_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
                 if 0 <= w_x <= data_manager.realplan_w and 0 <= w_y <= data_manager.realplan_h:

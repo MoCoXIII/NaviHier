@@ -65,12 +65,8 @@ w_x = 0
 w_y = 0
 pos = 0
 
-s_coords = []
-p_coords = []
 w_coords = []
 
-s_coords_count = 0
-p_coords_count = 0
 w_coords_count = 0
 
 scale = 0
@@ -78,3 +74,4 @@ gen_factor_w = 1.0
 gen_factor_h = 1.0
 
 second_plan = False
+second_plan_wp_count = 0

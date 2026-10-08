@@ -91,7 +91,6 @@ def delay_4_1_button_infosub():
 
 def room_create_finish_submit():
     global plan_path
-    #add_json()
     save_data(plan_path, shape, id_answer_list, name_answer_list, prof_answer_list, extrainfo_answer_list)
 
 def room_create_submit():
