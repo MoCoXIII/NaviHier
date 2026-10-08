@@ -7,6 +7,7 @@ import easypygamewidgets as epw
 import customtkinter
 import ctypes
 import ctypes.wintypes
+import platform
 import data_manager
 from json_manager import *
 
@@ -74,20 +75,29 @@ def place_plan():
     data_manager.plan_h = data_manager.widget_dic["4_012_surface_plan"].height
 
 def window_create():
+    os = platform.system()
     screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
     data_manager.res_w = 1920
     data_manager.res_h = 1080
     pygame.display.set_caption("Raumeditor")
     epw.link_pygame_window(screen)
-    hwnd = pygame.display.get_wm_info()["window"]                                                                           # hwnd (handle window): Window ID                                                                                    # ShowWindow: Funktion zum ändern des Zustandes eines Fensters // 0 = verstecken, 1 = normal anzeigen, 2 = minimieren, 3 = maximieren, 6 = minimieren in die Taskleiste
-
-    screen_w = ctypes.windll.user32.GetSystemMetrics(0)
-    screen_h = ctypes.windll.user32.GetSystemMetrics(1)
+    if os == "Windows":
+        hwnd = pygame.display.get_wm_info()["window"]                                                                           # hwnd (handle window): Window ID                                                                                    # ShowWindow: Funktion zum ändern des Zustandes eines Fensters // 0 = verstecken, 1 = normal anzeigen, 2 = minimieren, 3 = maximieren, 6 = minimieren in die Taskleiste
+    if os == "Windows":
+        screen_w = ctypes.windll.user32.GetSystemMetrics(0)
+        screen_h = ctypes.windll.user32.GetSystemMetrics(0)
+    else:
+        screen_w = pygame.display.get_desktop_sizes()[0][0]
+        screen_h = pygame.display.get_desktop_sizes()[0][1]
     if screen_w == 1920 and screen_h == 1080:
-        ctypes.windll.user32.ShowWindow(hwnd, 3)
+        if os == "Windows":
+            ctypes.windll.user32.ShowWindow(hwnd, 3)
+        else: 
+            pygame.display.maximize()
     screen = pygame.display.set_mode((1920, 1080))
     appereance_mode = ctypes.c_int(2)                                                                                       # appereance_mode: Variable zum Speichern des Anzeigemodus der Titelleiste // 0 = Light Mode, 1 = Dark Mode, 2 = Systemstandard
-    ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(appereance_mode), ctypes.sizeof(appereance_mode))     # DwmSetWindowAttribute: Funktion zum Ändern des Anzeigemodus der Titelleiste       # ctypes.byref: Funktion zu Bestimmen des Speicherorts der Variable; ctypes.sizeof: Funktion zum Bestimmen des Speicherplatzes der Variable (int: 4)
+    if os == "Windows":
+        ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(appereance_mode), ctypes.sizeof(appereance_mode))     # DwmSetWindowAttribute: Funktion zum Ändern des Anzeigemodus der Titelleiste       # ctypes.byref: Funktion zu Bestimmen des Speicherorts der Variable; ctypes.sizeof: Funktion zum Bestimmen des Speicherplatzes der Variable (int: 4)
     pygame.event.pump()
     return screen                                                                                                           # update von Pygame
 
