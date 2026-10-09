@@ -109,6 +109,17 @@ def get_window_size():
     height = rect.bottom - rect.top
     return width, height   
 
+def change_plan():
+    data_manager.root = root_selection()
+    data_manager.plan, data_manager.realplan_w, data_manager.realplan_h, data_manager.plan_path = plan_create(1)
+    data_manager.scale = get_scale()
+    data_manager.widget_dic = get_widget_dic(data_manager.plan)
+    place_plan()
+    data_manager.widget_geometry = get_widget_geometry()
+    data_manager.plan_start_x = data_manager.widget_dic["4_012_surface_plan"].x
+    data_manager.plan_start_y = data_manager.widget_dic["4_012_surface_plan"].y
+    place_widgets()
+
 def select_stairs():
     try:
         data_manager.plan, data_manager.realplan_w, data_manager.realplan_h, data_manager.plan_path = plan_create(2)
@@ -608,6 +619,11 @@ def get_widget_geometry():
             "y": data_manager.res_h * 0.575,
             "font_size": 30,
         },
+        "4_0_button_planchange": {
+            "x": 60,
+            "y": data_manager.res_h * 0.90,
+            "font_size": 30,
+        },
         "4_1_button_infosub": {
             "font_size": 30,
         },
@@ -839,6 +855,7 @@ def create_widgets(plan):
         "4_0_button_roomtype": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command=room_selected, screen=data_manager.room_creation_screen),
         "4_0_label_waytype": epw.Label(text="Wegpunkterstellung", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_creation_screen),
         "4_0_button_waytype": epw.Button(text="Auswählen", font=epw.SysFont(font="Calibri", font_size=30), command=waypoint_selected, screen=data_manager.room_creation_screen),
+        "4_0_button_planchange": epw.Button(text="Plan ändern", font=epw.SysFont(font="Calibri", font_size=30), command=change_plan, screen=data_manager.room_creation_screen),
         "4_1_label_infotitle": epw.Label(text="Rauminformationen", font=epw.SysFont(font="Calibri", font_size=40, bold=True), screen=data_manager.room_info_screen),
         "4_1_label_id": epw.Label(text="Raum Nr / ID *", font=epw.SysFont(font="Calibri", font_size=30), alignment_spacing=0, alignment="left", screen=data_manager.room_info_screen),
         "4_1_entry_id": epw.Entry(font=epw.SysFont(font="Calibri", font_size=30), height=57, hide_background=True, hide_border=True, auto_size=False, screen=data_manager.room_info_screen).bind(epw.FOCUS_IN, lambda: show_4_1_button_infosub("id")).bind(epw.FOCUS_OUT, room_info_submit_button_hide, False),
