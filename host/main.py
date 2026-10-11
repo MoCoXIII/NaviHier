@@ -12,7 +12,6 @@ from vector_handler import *
 pygame.init()
 
 data_manager.screen = window_create()
-data_manager.root = root_selection()
 data_manager.plan, data_manager.realplan_w, data_manager.realplan_h, data_manager.plan_path = plan_create(1)
 data_manager.scale = get_scale()
 data_manager.widget_dic = get_widget_dic(data_manager.plan)
@@ -33,7 +32,7 @@ while running:
     else:
         data_manager.widget_dic["4_1_button_finishsub"].config(state = "enabled")
 
-    if data_manager.widget_dic["4_3_label_dropdown"].text != "":
+    if data_manager.widget_dic["4_3_label_dropdown"].text != "" and data_manager.widget_dic["4_3_screen_group2"].visible:
         data_manager.widget_dic["4_3_button_poiaccept"].show()
     else:
         data_manager.widget_dic["4_3_button_poiaccept"].hide()
@@ -68,7 +67,6 @@ while running:
                     data_manager.w_coords.append(w_x)
                     data_manager.w_coords.append(w_y)
                     data_manager.w_coords_count += 1
-                    data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {w_x}, {w_y} wurde hinzugefügt.")
 
                     w_name = f"{floor_name(data_manager.plan_path)}_{w_x},{w_y}"
                     update_gen_factor()
@@ -121,6 +119,8 @@ while running:
                         data_manager.widget_dic["4_4_label_waypoint"].config(text=f"Treppenwegpunkt: {data_manager.wp_name}")
                         data_manager.widget_dic["4_4_button_select"].config(state="enabled")
 
+                    data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Wegpunkt {w_name} hinzugefügt")
+
             elif data_manager.shape and not data_manager.new_line and not data_manager.l_clicked and not data_manager.second_plan:
                 pos = pygame.mouse.get_pos()
                 w_x, w_y = int((pos[0] - data_manager.plan_start_x) / data_manager.scale), int((pos[1] - data_manager.plan_start_y) / data_manager.scale)
@@ -133,9 +133,9 @@ while running:
                         data_manager.widget_dic["4_3_screen_group2"].hide()
                         data_manager.widget_dic["4_3_screen_group3"].hide()
                         data_manager.widget_dic["4_3_screen_group4"].show()
-                        data_manager.widget_dic["4_3_label_connection"].config(text=f"Verbindung von {connection["start"]} zu {connection["end"]}")
+                        data_manager.widget_dic["4_3_label_connection"].config(text=f"Verbindung von\n{connection["start"]} zu {connection["end"]}")
+                        place_widgets()
                         ac = get_acessibility(connection["start"], connection["end"])
-                        print(ac)
                         if ac:
                             data_manager.widget_dic["4_3_checkbox_acessible"].config(checked = True)
                         else:
@@ -155,13 +155,14 @@ while running:
 
             if data_manager.new_line and data_manager.r_clicked:
                 del_waypoint(wp, 1)
+                data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Wegpunkt {wp} entfernt.")
         
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE and data_manager.last_wp != "":
             if data_manager.shape == 3 and data_manager.w_coords_count > 0:
                     try:
                         if data_manager.last_wp == "":
                             data_manager.last_wp = data_manager.waypoint_list[-1]
-                        data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Der Wegpunkt bei {data_manager.w_coords[-2]}, {data_manager.w_coords[-1]} wurde entfernt.")
+                        data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Wegpunkt {data_manager.last_wp} entfernt.")
                         del_waypoint(data_manager.last_wp, 0)
                     except:
                         pass

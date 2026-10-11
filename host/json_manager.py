@@ -3,10 +3,10 @@ import data_manager
 from pathlib import Path
 
 def to_relative(plan_path):
-    return Path(plan_path).resolve().relative_to(data_manager.root).as_posix()
+    return Path(plan_path).resolve().relative_to(Path(plan_path).parent.parent.parent.parent).as_posix()
 
-def to_absolute(rel_plan_path):
-    return (data_manager.root / rel_plan_path).as_posix()
+def to_absolute(rel_plan_path, plan_path):
+    return (plan_path.parent.parnet.parent.parent / rel_plan_path).as_posix()
 
 def floor_name(plan_path):
     path_objekt = Path(plan_path)
@@ -81,9 +81,12 @@ def del_second_connection_json(name):
         current_data = json.load(file)
     for con in current_data["connections"]:
         if con["start"] == name["start"] and con["end"] == name["end"]:
-            second_plan_path = to_absolute(con["end_plan_path"])
+            second_plan_path = to_absolute(con["end_plan_path"], data_manager.plan_path)
             break
-    if second_plan_path is None:
+    try:
+        if second_plan_path is None:
+            return
+    except UnboundLocalError:
         return
     with open(fr"{str(json_path(second_plan_path))}", "r", encoding="utf-8") as file:
         second_data = json.load(file)
