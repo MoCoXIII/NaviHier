@@ -157,18 +157,6 @@ while running:
                 del_waypoint(wp, 1)
         
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE and data_manager.last_wp != "":
-            if data_manager.shape == 1 and data_manager.s_coords_count > 0 and data_manager.widget_dic["4_0_screen_group"].visible:
-                data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {data_manager.s_coords[-2]}, {data_manager.s_coords[-1]} wurde entfernt.")
-                data_manager.s_coords.pop()
-                data_manager.s_coords.pop()
-                data_manager.s_coords_count -= 1
-            
-            if data_manager.shape == 2 and data_manager.p_coords_count > 0:
-                data_manager.widget_dic["4_012_label_statuscontent"].config(text=f"Die Koordinate {data_manager.p_coords[-2]}, {data_manager.p_coords[-1]} wurde entfernt.")
-                data_manager.p_coords.pop()
-                data_manager.p_coords.pop()
-                data_manager.p_coords_count -= 1
-            
             if data_manager.shape == 3 and data_manager.w_coords_count > 0:
                     try:
                         if data_manager.last_wp == "":
@@ -180,11 +168,7 @@ while running:
                        
 
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and data_manager.shape in (1, 2, 3) and data_manager.widget_dic["4_0_screen_group"].visible:
-            data_manager.s_coords.clear()
-            data_manager.p_coords.clear()
             data_manager.w_coords.clear()
-            data_manager.s_coords_count = 0
-            data_manager.p_coords_count = 0
             data_manager.w_coords_count = 0
             data_manager.widget_dic["4_012_label_statuscontent"].config(text="Zurücksetzen der Variablen")
 

@@ -59,11 +59,8 @@ root = ""
 l_clicked = False
 r_clicked = False
 
-s_x = 0
-s_y = 0
 w_x = 0
 w_y = 0
-pos = 0
 
 w_coords = []
 
