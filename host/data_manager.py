@@ -34,7 +34,7 @@ new_line = False
 show_line = True
 poi_list = []
 poi_list_start = 0
-current_y = 0
+room_list_start = 0
 wp_memory = ""
 wp_name = ""
 con_name = ""
@@ -75,3 +75,5 @@ gen_factor_h = 1.0
 
 second_plan = False
 second_plan_wp_count = 0
+
+del_room_name = ""

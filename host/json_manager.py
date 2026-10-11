@@ -29,6 +29,13 @@ def add_room_json(data, name, plan_path):
     with open(fr"{str(json_path(plan_path))}", "w", encoding="utf-8") as file:
         json.dump(current_data, file, indent=4, ensure_ascii=False)  
 
+def del_room_json():
+    with open(fr"{str(json_path(data_manager.plan_path))}", "r", encoding="utf-8") as file:
+        current_data = json.load(file)
+    del current_data["poi"][data_manager.del_room_name]
+    with open(fr"{str(json_path(data_manager.plan_path))}", "w", encoding="utf-8") as file:
+        json.dump(current_data, file, indent=4, ensure_ascii=False)
+
 def save_data(plan_path, nr, name, prof, extrainf):
     room_nr = str(nr[0])
     data = {
