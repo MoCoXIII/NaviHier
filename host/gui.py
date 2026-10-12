@@ -74,17 +74,12 @@ def window_create():
     epw.link_pygame_window(screen)
     if os == "Windows":
         hwnd = pygame.display.get_wm_info()["window"]                                                                           # hwnd (handle window): Window ID                                                                                    # ShowWindow: Funktion zum ändern des Zustandes eines Fensters // 0 = verstecken, 1 = normal anzeigen, 2 = minimieren, 3 = maximieren, 6 = minimieren in die Taskleiste
-    if os == "Windows":
-        screen_w = ctypes.windll.user32.GetSystemMetrics(0)
-        screen_h = ctypes.windll.user32.GetSystemMetrics(0)
-    else:
-        screen_w = pygame.display.get_desktop_sizes()[0][0]
-        screen_h = pygame.display.get_desktop_sizes()[0][1]
+    screen_w = pygame.display.get_desktop_sizes()[0][0]
+    screen_h = pygame.display.get_desktop_sizes()[0][1]
     if screen_w == 1920 and screen_h == 1080:
-        if os == "Windows":
-            ctypes.windll.user32.ShowWindow(hwnd, 3)
-        else: 
-            pygame.display.maximize()
+        window =pygame.Window.from_display_module()
+        window.maximize()
+        pygame.event.pump()
     screen = pygame.display.set_mode((1920, 1080))
     appereance_mode = ctypes.c_int(2)                                                                                       # appereance_mode: Variable zum Speichern des Anzeigemodus der Titelleiste // 0 = Light Mode, 1 = Dark Mode, 2 = Systemstandard
     if os == "Windows":
@@ -651,7 +646,7 @@ def get_widget_geometry():
         },
         "4_0_button_planchange": {
             "x": 60,
-            "y": data_manager.res_h * 0.90,
+            "y": data_manager.res_h * 0.85,
             "font_size": 30,
         },
         "4_1_button_infosub": {
@@ -833,7 +828,7 @@ def get_widget_geometry():
         },
         "4_3_button_back": {
             "x": 60,
-            "y": data_manager.res_h * 0.90,
+            "y": data_manager.res_h * 0.85,
             "font_size": 30,
         },
         "4_3_label_titlecon": {
